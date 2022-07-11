@@ -1,3 +1,7 @@
+html,body {
+  height:100%;
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -18,4 +22,26 @@ code {
 hr {
   border: 1px solid #323743;
   margin: 40px;
+}
+
+.sheet{
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0px 0px 5px 2px lightgray;
+  padding: 1.2em;
+  margin: 0.8em;
+}
+
+.sheet.area-wrapper{
+  height: 100%;
+}
+
+.sheet.dark{
+  background-color: rgb(41, 41, 41);
+  color: white;
+  
+}
+
+.sheet.no-margin{
+  margin: 0px !important;
 }

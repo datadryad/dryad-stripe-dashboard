@@ -3,17 +3,37 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@metamodules/postgres": "^1.2.1",
+    "@ant-design/icons": "^4.7.0",
+    "@metamodules/mongo": "^1.1.1",
+    "antd": "^4.21.5",
+    "axios": "^0.27.2",
+    "body-parser": "^1.20.0",
+    "cookie-parser": "^1.4.6",
+    "cookie-session": "^2.0.0",
+    "cors": "^2.8.5",
+    "currency-symbol-map": "^5.1.0",
     "deploy-node-app": "^1.4.3",
     "dotenv": "^8.0.0",
+    "express-respond": "^1.6.1",
+    "express-response-formatter": "^2.0.0",
+    "express-session": "^1.17.3",
+    "human-date": "^1.4.0",
+    "mongoose": "^4.13.21",
+    "node-mongoose-auth": "^1.0.4",
+    "patch-package": "^6.4.7",
+    "random-gradient": "^0.0.2",
     "react": "^16.8.6",
+    "react-auth-kit": "^2.1.0",
     "react-dom": "^16.8.6",
-    "react-scripts": "3.0.1"
+    "react-router-dom": "^6.3.0",
+    "react-scripts": "3.0.1",
+    "react-wavify": "^1.6.1",
+    "stripe": "^9.12.0",
+    "user-permissions": "^0.4.4"
   },
   "devDependencies": {
-    "concurrently": "^4.1.0",
-    "nodemon": "^1.19.1",
     "babel-eslint": "10.0.1",
+    "concurrently": "^4.1.0",
     "cross-spawn": "^6.0.5",
     "eslint": "^5.16.0",
     "eslint-config-standard": "^12.0.0",
@@ -23,6 +43,7 @@
     "eslint-plugin-prettier": "^3.1.0",
     "eslint-plugin-promise": "^4.1.1",
     "eslint-plugin-standard": "^4.0.0",
+    "nodemon": "^1.19.1",
     "prettier": "^1.17.1"
   },
   "scripts": {
@@ -58,5 +79,5 @@
       "isPublic": false
     }
   },
-  "proxy": "http://localhost:4000"
+  "proxy": "http://localhost:4000/"
 }

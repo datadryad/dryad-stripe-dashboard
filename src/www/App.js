@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import logos from './logos.svg'
 import './App.css'
+import 'antd/dist/antd.css';
 
 class App extends Component {
   state = {

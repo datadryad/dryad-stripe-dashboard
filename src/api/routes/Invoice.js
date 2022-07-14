@@ -31,7 +31,7 @@ router.post('/retrieve', authMiddleware, async (req, res) => {
     const user = req.user;
     
     if(!data.invoice_id) return res.formatter.badRequest("Missing Invoice ID.");
-    if(notPermitted(user, "view_invoice")) return res.formatter.unauthorized(["You don't have the permission to view invoices."]);
+    if(notPermitted(user, "view_invoice")) return res.formatter.unauthorized("You don't have the permission to view invoices.");
 
     try {
         const invoice = await Stripe.invoices.retrieve(data.invoice_id);
@@ -50,11 +50,14 @@ router.post('/update/:action', authMiddleware, async (req, res) => {
     const invoice_id = data.invoice_id;
     const user = req.user;
 
-    console.log(user);
-
     if(!action) return res.formatter.badRequest("Missing action.");
     if(!invoice_id) return res.formatter.badRequest("Missing invoice ID.");
-    if(notPermitted(user, "set_" + action)) return res.formatter.unauthorized([`You are not authorized to change status of Invoices to ${toTitleCase(action)}.`])
+    if(notPermitted(user, "set_" + action)){
+        let s = action;
+        s = toTitleCase(action);
+        s = s.replaceAll('_', ' '); 
+        return res.formatter.unauthorized(`You are not authorized to change status of Invoices to ${s}.`);
+    }
 
     if(![
         'paid', 
@@ -103,6 +106,8 @@ router.post('/update/:action', authMiddleware, async (req, res) => {
             case 'refund':
                 invoice = await Stripe.invoices.retrieve(invoice_id);
                 const charge = invoice.charge;
+                console.log(charge);
+                return;
                 let refund = await Stripe.refunds.create({ charge });
 
                 invoice = setCustomStatus(invoice_id, "refund");
@@ -125,11 +130,14 @@ router.post('/update/label/:action', authMiddleware, async (req, res) => {
     const invoice_id = data.invoice_id;
     const user = req.user;
 
-    console.log(user);
-
     if(!action) return res.formatter.badRequest("Missing action.");
     if(!invoice_id) return res.formatter.badRequest("Missing invoice ID.");
-    if(notPermitted(user, "set_to_be_" + action)) return res.formatter.unauthorized([`You are not authorized to change labels of Invoices to ${toTitleCase(action)}.`])
+    if(notPermitted(user, "set_to_be_" + action)){
+        let s = action;
+        s = toTitleCase(action);
+        s = s.replaceAll('_', ' '); 
+        return res.formatter.unauthorized(`You are not authorized to ch ange status of Invoices to ${toTitleCase(s)}.`);
+    }
 
     if(![
         'paid', 
@@ -142,7 +150,6 @@ router.post('/update/label/:action', authMiddleware, async (req, res) => {
 
     try {
         const invoice = await setTemporaryStatus(invoice_id, action);
-        console.log(invoice);
         return res.formatter.ok(invoice);
     } catch (err) {
         return handleError(res, err);

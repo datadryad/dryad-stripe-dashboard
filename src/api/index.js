@@ -4,12 +4,15 @@ var cors = require('cors')
 // const mongo = require('@metamodules/mongo')().base;
 
 const invoiceRoutes = require("./routes/Invoice");
+const reportRoutes = require("./routes/Report");
+const webHookRoutes = require("./routes/StripeWebhook");
 const responseEnhancer = require('express-response-formatter').responseEnhancer;
 
 process.env.SECRET_KEY = "DEV";
 const { authRouter } = require("node-mongoose-auth");
 var mongoose = require('mongoose');
 const AuthRoutes = require('./routes/Auth');
+const { initiateRestore } = require('./stripe');
 // const UserSchema = require("node-mongoose-auth/models/UserSchema").add({permissions : String});
 
 const app = express()
@@ -19,10 +22,16 @@ app.use(cors())
 const MONGO_URI = `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@${process.env.MONGO_SERVICE_HOST}:${process.env.MONGO_SERVICE_PORT}/${process.env.MONGO_INITDB_DATABASE}?authSource=admin`
 
 
-mongoose.connect(MONGO_URI).then(r => {
-  console.log('connected')
+mongoose.connect(MONGO_URI, {useNewUrlParser: true, useUnifiedTopology: true}).then(r => {
+
+  initiateRestore();
+  
   app.use('/auth', authRouter);
+  app.use('/reports', reportRoutes);
+
 });
+
+app.use('/webhook', webHookRoutes);
 
 app.use(responseEnhancer());
 app.use(express.json());
@@ -30,7 +39,9 @@ app.use(express.urlencoded({ extended: true }));
 
 
 app.use('/invoices', invoiceRoutes);
-app.use('/user', AuthRoutes); 
+
+app.use('/user', AuthRoutes);
+
 
 
 // PRINT ROUTES

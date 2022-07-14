@@ -1,13 +1,36 @@
 import React, { useState, useEffect } from 'react'
 import { Button, Dropdown, Menu, Space, Table, Tag } from "antd"
-import { DownOutlined, LayoutOutlined, RollbackOutlined, SmileOutlined } from '@ant-design/icons';
-import { apiCall, getDateObject } from '../../helpers';
+import { DownOutlined, LayoutOutlined, RightCircleOutlined, RollbackOutlined, SmileOutlined } from '@ant-design/icons';
+import { apiCall, getDateObject, getStatusColor, printAmount, reportError } from '../../helpers';
 import { NavLink } from 'react-router-dom';
 import StatusTag from './snippets/StatusTag';
+import { useAuthHeader } from 'react-auth-kit';
 
 const hdate = require("human-date");
 
-const actionsMenu = (invoice_id) => {
+const changeStatus = (new_status, invoice_id, auth_token, fetchInvoices) => {
+
+    apiCall(`/invoices/update/${new_status}`, {invoice_id}, (response) => {
+        if(response.status == 200) fetchInvoices();
+        else{
+            reportError(response);
+        }
+    }, auth_token);
+}
+
+const changeLabel = (new_status, invoice_id, auth_token, fetchInvoices) => {
+
+    apiCall(`/invoices/update/label/${new_status}`, {invoice_id}, (response) => {
+        if(response.status == 200) fetchInvoices();
+        else{
+            reportError(response);
+        }
+    }, auth_token);
+}
+
+const actionsMenu = (invoice_id, auth_token, fetchInvoices) => {
+    
+    
     return (
 
         <Menu 
@@ -23,12 +46,94 @@ const actionsMenu = (invoice_id) => {
                 },
                 {
                     key : 2,
+                    label : 'Mark Invoice',
+                    children : [
+                        {
+                            key : '2.1',
+                            label : (
+                                <Button block type="dashed" onClick={() => changeLabel("paid", invoice_id, auth_token, fetchInvoices)}>Paid</Button>
+                            )
+                        },
+                        {
+                            key : '2.2',
+                            label : (
+                                <Button block type="dashed" onClick={() => changeLabel("invoiced_in_error", invoice_id, auth_token, fetchInvoices)}>Invoiced in error</Button>
+                            )
+                        },
+                        {
+                            key : '2.3',
+                            label : (
+                                <Button block type="dashed" onClick={() => changeLabel("waiver", invoice_id, auth_token, fetchInvoices)}>Waiver</Button>
+                            )
+                        },
+                        {
+                            key : '2.4',
+                            label : (
+                                <Button block type="dashed" onClick={() => changeLabel("voucher", invoice_id, auth_token, fetchInvoices)}>Voucher</Button>
+                            )
+                        },
+                        {
+                            key : '2.5',
+                            label : (
+                                <Button block type="dashed" onClick={() => changeLabel("refund", invoice_id, auth_token, fetchInvoices)}>Refund</Button>
+                            )
+                        },
+                        {
+                            key : '2.6',
+                            label : (
+                                <Button block type="dashed" onClick={() => changeLabel("uncollectible", invoice_id, auth_token, fetchInvoices)}>Uncollectible</Button>
+                            )
+                        },
+                    ]
+                },
+                {
+                    key : 3,
+                    label : 'Change Status',
+                    children : [
+                        {
+                            key : '3.1',
+                            label : (
+                                <Button block onClick={() => changeStatus("paid", invoice_id, auth_token, fetchInvoices)}>Paid</Button>
+                            )
+                        },
+                        {
+                            key : '3.2',
+                            label : (
+                                <Button block onClick={() => changeStatus("invoiced_in_error", invoice_id, auth_token, fetchInvoices)}>Invoiced in error</Button>
+                            )
+                        },
+                        {
+                            key : '3.3',
+                            label : (
+                                <Button block onClick={() => changeStatus("waiver", invoice_id, auth_token, fetchInvoices)}>Waiver</Button>
+                            )
+                        },
+                        {
+                            key : '3.4',
+                            label : (
+                                <Button block onClick={() => changeStatus("voucher", invoice_id, auth_token, fetchInvoices)}>Voucher</Button>
+                            )
+                        },
+                        {
+                            key : '3.5',
+                            label : (
+                                <Button block onClick={() => changeStatus("refund", invoice_id, auth_token, fetchInvoices)}>Refund</Button>
+                            )
+                        },
+                        {
+                            key : '3.6',
+                            label : (
+                                <Button block onClick={() => changeStatus("uncollectible", invoice_id, auth_token, fetchInvoices)}>Uncollectible</Button>
+                            )
+                        },
+                    ]
+                },
+                {
+                    key : 4,
                     label : (
-                        <NavLink to="/">
-                            <Button type='primary' danger icon={<RollbackOutlined/>} block >Refund</Button>
-                        </NavLink>
+                            <Button type='primary' danger icon={<RollbackOutlined/>} block onClick={() => changeStatus("uncollectible", invoice_id, auth_token, fetchInvoices)} >Refund</Button>
                     )
-                }
+                },
             ]}
 
             onClick={(e) => console.log(e)}
@@ -37,124 +142,183 @@ const actionsMenu = (invoice_id) => {
 }
 
 
-const columns = [
-    // Offering
-    {
-        title : "Offering",
-        dataIndex : "account_name",
-        key : "account_name"
-    },
-    // Email
-    {
-        title : "Email",
-        dataIndex : "customer_email",
-        key : "customer_email"
-    },
-    // Amount
-    {
-        title : "Amount",
-        dataIndex : "amount_due",
-        key : "amount_due",
-        align : "center",
-        render : (amount) => {
-            return ( 
-                <b>{`₹${amount}`}</b>
-            )
-        }
-    },
-    // Status
-    {
-        title : "Status",
-        dataIndex : "status",
-        key : "status",
-        align : "center",
-        render : (status) => <StatusTag status={status}/>,
-        filters : [
-            {
-                text : 'Draft',
-                value : 'draft'
-            },
-            {
-                text : 'Invoiced in error',
-                value : 'invoiced_in_error'
-            },
-            {
-                text : 'Waiver',
-                value : 'waiver'
-            },
-            {
-                text : 'Voucher',
-                value : 'voucher'
-            },
-            {
-                text : 'Refund',
-                value : 'refund'
-            },
-            {
-                text : 'Uncollectible',
-                value : 'uncollectible'
-            },
-            {
-                text : "Open",
-                value : "open"
-            },
-            {
-                text : "Paid",
-                value : "paid"
-            }
-        ],
-        onFilter: (value, record) => record.status === value,
-    },
-    {
-        title : "Created",
-        dataIndex : "created_verbose",
-        key : "created_verbose"
-    },
-    {
-        title : "Action",
-        dataIndex : "id",
-        key : "action",
-        render : (invoice_id) => {
-            return (
-                <Dropdown
-                arrow={1}
-                overlay={actionsMenu(invoice_id)}
-                placement="bottomRight"
-            >
-                <Button >
-                    <Space>
-                    Take Action
-                    <DownOutlined/>
-                    </Space>
-                </Button>
-            </Dropdown>
-            )
-        }
-    }
-]
+
 
 const onChange = (pagination, filters, sorter, extra) => {
     console.log('params', pagination, filters, sorter, extra);
   };
 
+
 const ListInvoicesSheet =  () => {
 
+    const authHeader = useAuthHeader();
     const [invoices, setInvoices] = useState([]);
-
-    useEffect(() => {
-        
+    const [loading, setLoading] = useState(false);
+    const fetchInvoices = () => {
+        setLoading(true);
         apiCall("/invoices/list", {}, (r) => {
-
+    
             let invoices = r.data.data.data;
             // console.log(Array.isArray(invoices))
             invoices.forEach((row, index) => {
                 row.created_verbose = hdate.prettyPrint(getDateObject(row.created), { showTime : true });
                 row.key = index;
             })
-            console.log(invoices);
-
+            setLoading(false);
             setInvoices(invoices);
-        })
+        }, authHeader(), setLoading)
+        
+    }
+
+    const columns = [
+        // Offering
+        {
+            title : "Offering",
+            dataIndex : "account_name",
+            key : "account_name"
+        },
+        // Email
+        {
+            title : "Email",
+            dataIndex : "customer_email",
+            key : "customer_email"
+        },
+        // Amount
+        {
+            title : "Amount",
+            dataIndex : "amount_due",
+            key : "amount_due",
+            align : "center",
+            render : (amount, invoice) => {
+                return ( 
+                    <span>{printAmount(invoice)}</span>
+                )
+            }
+        },
+        // Marked for Status
+        {
+            title : "Marked for",
+            dataIndex : "metadata.marked_status",
+            key : "marked_status",
+            align : "center",
+            render : (metadata_marked_status, invoice) => {
+                
+                if(invoice.metadata.marked_status){
+                    return <StatusTag faint status={invoice.metadata.marked_status}/>
+                }
+            },
+            filters : [
+                {
+                    text : 'Draft',
+                    value : 'draft'
+                },
+                {
+                    text : 'Invoiced in error',
+                    value : 'invoiced_in_error'
+                },
+                {
+                    text : 'Waiver',
+                    value : 'waiver'
+                },
+                {
+                    text : 'Voucher',
+                    value : 'voucher'
+                },
+                {
+                    text : 'Refund',
+                    value : 'refund'
+                },
+                {
+                    text : 'Uncollectible',
+                    value : 'uncollectible'
+                },
+                {
+                    text : "Open",
+                    value : "open"
+                },
+                {
+                    text : "Paid",
+                    value : "paid"
+                }
+            ],
+            onFilter: (value, record) => record.status === value,
+        },
+        // Current Status
+        {
+            title : "Current status",
+            dataIndex : "status",
+            key : "status",
+            align : "center",
+            render : (status, invoice) => <StatusTag status={invoice.metadata.hasOwnProperty("custom_status") ? invoice.metadata.custom_status : status}/>,
+            filters : [
+                {
+                    text : 'Draft',
+                    value : 'draft'
+                },
+                {
+                    text : 'Invoiced in error',
+                    value : 'invoiced_in_error'
+                },
+                {
+                    text : 'Waiver',
+                    value : 'waiver'
+                },
+                {
+                    text : 'Voucher',
+                    value : 'voucher'
+                },
+                {
+                    text : 'Refund',
+                    value : 'refund'
+                },
+                {
+                    text : 'Uncollectible',
+                    value : 'uncollectible'
+                },
+                {
+                    text : "Open",
+                    value : "open"
+                },
+                {
+                    text : "Paid",
+                    value : "paid"
+                }
+            ],
+            onFilter: (value, record) => record.status === value,
+        },
+        {
+            title : "Created",
+            dataIndex : "created_verbose",
+            key : "created_verbose"
+        },
+        {
+            title : "Action",
+            dataIndex : "id",
+            key : "action",
+            render : (invoice_id) => {
+                return (
+                    <Dropdown
+                    arrow={false}
+                    overlay={actionsMenu(invoice_id, authHeader(), fetchInvoices)}
+                    placement="bottomRight"
+                >
+                    <Button >
+                        <Space>
+                        Actions
+                        <DownOutlined/>
+                        </Space>
+                    </Button>
+                </Dropdown>
+                )
+            }
+        }
+    ]
+
+    
+
+    useEffect(() => {
+        
+        fetchInvoices();
       
     }, [])
     
@@ -163,7 +327,7 @@ const ListInvoicesSheet =  () => {
             <Space/>
             <h1>Invoices </h1>
             
-            <Table dataSource={invoices} columns={columns} onChange={onChange} />
+            <Table loading={loading} dataSource={invoices} columns={columns} onChange={onChange} />
             
         </div>
     )

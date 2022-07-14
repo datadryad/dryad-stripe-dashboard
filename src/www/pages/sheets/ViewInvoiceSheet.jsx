@@ -69,7 +69,7 @@ const cols = [
         dataIndex : "price",
         render : (price) => {
             let s = toTitleCase(price.type);
-            s = s.replace('_', ' ');
+            s = s.replaceAll('_', ' ');
             return s;
         },
         key : "type"
@@ -113,7 +113,7 @@ const ViewInvoiceSheet = () => {
 
 
             setInvoice(invoice);
-            setItems(invoice.lines.data)
+            setItems(invoice.lines.data);
         }, authHeader())
     }, [])
     

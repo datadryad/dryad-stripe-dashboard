@@ -1,0 +1,8 @@
+bases:
+  - ../../node_modules/@metamodules/mongo
+resources:
+  - secrets/mongo-secret.yaml
+  - frontend-configmap.yaml
+  - frontend-deployment.yaml
+  - frontend-service.yaml
+  - frontend-ingress.yaml

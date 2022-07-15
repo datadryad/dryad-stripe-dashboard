@@ -3,6 +3,6 @@
 //
 // For the backend, we set the container's entrypoint to src/api/index.js
 
-var root = import('./www')
+import "./www"
 
-export default root;
+// export default root;

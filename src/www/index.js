@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import './index.css'
-import App from './App' 
+import 'antd/dist/antd.css';
 import * as serviceWorker from './serviceWorker'
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import SheetRoutes from './pages/sheets/SheetRoutes'

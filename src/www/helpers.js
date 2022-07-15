@@ -1,17 +1,16 @@
-const { notification } = require('antd');
-const getSymbolFromCurrency = require('currency-symbol-map');
-const { useAuthHeader } = require('react-auth-kit');
+import { notification } from 'antd';
+import getSymbolFromCurrency from 'currency-symbol-map';
+import { useAuthHeader } from 'react-auth-kit';
+import axios from 'axios';
 
-const axios = require('axios').default;
+export const API_URL = "http://localhost:4000";
 
-const API_URL = "http://localhost:4000";
-
-const apiCall = (route, data, callback, token, loadingCallbackState) => {
+export const apiCall = (route, data, callback, token, loadingCallbackState) => {
 
     axios.post(API_URL + route, data, (token ? { headers : { Authorization : token } } : {})).then(callback).catch(error => {reportError(error); if(loadingCallbackState) loadingCallbackState(false)});
 }
 
-const reportError = (axios_response) => {
+export const reportError = (axios_response) => {
     console.log(axios_response);
 
     const notif = {
@@ -47,13 +46,13 @@ const reportError = (axios_response) => {
     notification['error'](notif);
 }
 
-const getDateObject = (seconds) => {
+export const getDateObject = (seconds) => {
     var t = new Date(1970, 0, 1); // Epoch
     t.setSeconds(seconds);
     return t;
 }
 
-const getStatusColor = (status) => {
+export const getStatusColor = (status) => {
     let color = false;
     switch (status) {
         case 'paid':
@@ -91,8 +90,6 @@ const getStatusColor = (status) => {
     return color;
 }
 
-const printAmount = (invoice) => {
+export const printAmount = (invoice) => {
     return `${getSymbolFromCurrency(invoice.currency)}${Math.round(invoice.amount_due/100)}`;
 }
-
-module.exports = { apiCall, reportError, getDateObject, getStatusColor, printAmount }

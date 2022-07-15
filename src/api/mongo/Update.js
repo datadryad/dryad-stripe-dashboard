@@ -1,4 +1,4 @@
-const mongoose = require("mongoose")
+import mongoose from 'mongoose';
 
 const UpdateSchema = new mongoose.Schema({
     resource_id : {
@@ -30,4 +30,4 @@ const UpdateSchema = new mongoose.Schema({
 
 const update = mongoose.model("Update", UpdateSchema);
 
-module.exports = update;
+export default update;

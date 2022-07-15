@@ -1,5 +1,5 @@
-const express = require('express');
-const { User } = require('node-mongoose-auth');
+import express from 'express';
+import { User } from 'node-mongoose-auth';
 
 const router = express.Router();
 
@@ -32,4 +32,4 @@ router.post('/permit', async (req, res) => {
 
 
 
-module.exports = router 
+export default router; 

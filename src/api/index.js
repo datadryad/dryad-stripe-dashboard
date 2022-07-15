@@ -1,18 +1,22 @@
-const express = require('express')
-require('dotenv').config();
-var cors = require('cors')
+import express from 'express';
+import {default as dotenv} from 'dotenv';
+dotenv.config();
+// require('dotenv').config();
+import cors from 'cors';
+
 // const mongo = require('@metamodules/mongo')().base;
 
-const invoiceRoutes = require("./routes/Invoice");
-const reportRoutes = require("./routes/Report");
-const webHookRoutes = require("./routes/StripeWebhook");
-const responseEnhancer = require('express-response-formatter').responseEnhancer;
+import invoiceRoutes from "./routes/Invoice.js";
+
+import reportRoutes from './routes/Report.js';
+import webHookRoutes from './routes/StripeWebhook.js';
+import { responseEnhancer } from 'express-response-formatter';
 
 process.env.SECRET_KEY = "DEV";
-const { authRouter } = require("node-mongoose-auth");
-var mongoose = require('mongoose');
-const AuthRoutes = require('./routes/Auth');
-const { initiateRestore } = require('./stripe');
+import { authRouter } from 'node-mongoose-auth';
+import mongoose from 'mongoose';
+import AuthRoutes from './routes/Auth.js';
+import { initiateRestore } from './stripe.js';
 // const UserSchema = require("node-mongoose-auth/models/UserSchema").add({permissions : String});
 
 const app = express()
@@ -20,7 +24,7 @@ const port = 4000;
 app.use(cors())
 
 const MONGO_URI = `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@${process.env.MONGO_SERVICE_HOST}:${process.env.MONGO_SERVICE_PORT}/${process.env.MONGO_INITDB_DATABASE}?authSource=admin`
-
+console.log(MONGO_URI);
 
 mongoose.connect(MONGO_URI, {useNewUrlParser: true, useUnifiedTopology: true}).then(r => {
 
@@ -56,7 +60,7 @@ app.use('/user', AuthRoutes);
 //         path.concat(split(layer.regexp)).filter(Boolean).join('/'))
 //     }
 //   }
-  
+
 //   function split (thing) {
 //     if (typeof thing === 'string') {
 //       return thing.split('/')
@@ -72,7 +76,7 @@ app.use('/user', AuthRoutes);
 //         : '<complex:' + thing.toString() + '>'
 //     }
 //   }
-  
+
 //   app._router.stack.forEach(print.bind(null, []))
 // PRINT ROUTES
 

@@ -57,7 +57,8 @@
     "deploy": "deploy-node-app",
     "test": "react-scripts test",
     "eject-www": "react-scripts eject",
-    "psql": "export $(cat .env | xargs) && PGPASSWORD=${POSTGRES_PASSWORD} psql -h ${POSTGRES_SERVICE_HOST} -p ${POSTGRES_SERVICE_PORT} -U ${POSTGRES_USER} ${POSTGRES_DB}"
+    "psql": "export $(cat .env | xargs) && PGPASSWORD=${POSTGRES_PASSWORD} psql -h ${POSTGRES_SERVICE_HOST} -p ${POSTGRES_SERVICE_PORT} -U ${POSTGRES_USER} ${POSTGRES_DB}",
+    "postinstall": "patch-package"
   },
   "eslintConfig": {
     "extends": "react-app"

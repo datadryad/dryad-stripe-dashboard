@@ -1,9 +1,16 @@
-const express = require('express');
-const { authMiddleware } = require('node-mongoose-auth/auth');
+import express from 'express';
+import { authMiddleware } from 'node-mongoose-auth/auth.js';
 
 const router = express.Router();
 
-const {Stripe, handleError, setCustomStatus, notPermitted, toTitleCase, setTemporaryStatus} = require("../stripe");
+import {
+    Stripe,
+    handleError,
+    setCustomStatus,
+    notPermitted,
+    toTitleCase,
+    setTemporaryStatus,
+} from '../stripe.js';
 
 router.post('/list', async (req, res) => {
 
@@ -158,4 +165,4 @@ router.post('/update/label/:action', authMiddleware, async (req, res) => {
 
 
 
-module.exports = router 
+export default router; 

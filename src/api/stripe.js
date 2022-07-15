@@ -1,15 +1,16 @@
-const ordinal = require("ordinal");
-const { User } = require('node-mongoose-auth');
-const Invoice = require('./mongo/Invoice');
+import ordinal from 'ordinal';
+import { User } from 'node-mongoose-auth';
+import Invoice from './mongo/Invoice.js';
+import StripeFactory from 'stripe';
 
-const Stripe = require('stripe')('sk_test_fX9EovHjWMI7pR7saJuJ6Cka');
+export const Stripe = StripeFactory('sk_test_fX9EovHjWMI7pR7saJuJ6Cka');
 
-const handleError = (res, err) => {
+export const handleError = (res, err) => {
     // console.error(err);
     return res.status(err.statusCode).json(err);
 }
 
-const setCustomStatus = async (invoice_id, status) => {
+export const setCustomStatus = async (invoice_id, status) => {
     let invoice = await Stripe.invoices.update(
         invoice_id,
         {
@@ -22,7 +23,7 @@ const setCustomStatus = async (invoice_id, status) => {
     return invoice;
 };
 
-const setTemporaryStatus = async (invoice_id, temporary_status) => {
+export const setTemporaryStatus = async (invoice_id, temporary_status) => {
     let invoice = await Stripe.invoices.update(
         invoice_id,
         {
@@ -35,14 +36,14 @@ const setTemporaryStatus = async (invoice_id, temporary_status) => {
     return invoice;
 };
 
-const notPermitted = (user, permission) => {
+export const notPermitted = (user, permission) => {
     if(!user.permissions.has(permission)) return true;
     if(user.permissions.get(permission) === "false") return true;
 
     return false;
 }
 
-function toTitleCase(str) {
+export function toTitleCase(str) {
     return str.replace(
       /\w\S*/g,
       function(txt) {
@@ -51,7 +52,7 @@ function toTitleCase(str) {
     );
 }
 
-const getAmountAndCountData = async (start_time, end_time) => {
+export const getAmountAndCountData = async (start_time, end_time) => {
     const start_secs = start_time.unix();
     const end_secs = end_time.unix();
 
@@ -91,7 +92,7 @@ const getAmountAndCountData = async (start_time, end_time) => {
     }
 }
 
-const initiateRestore = async () => {
+export const initiateRestore = async () => {
     // const first_record = await Stripe.invoices.list({
     //     limit : 1
     // });
@@ -180,4 +181,3 @@ return;
 
 
 
-module.exports = { Stripe, handleError, setCustomStatus, notPermitted, toTitleCase, setTemporaryStatus, getAmountAndCountData, initiateRestore }

@@ -1,11 +1,14 @@
-import { DollarOutlined, PlusCircleFilled } from '@ant-design/icons';
-import { Carousel, Col, Row, Segmented, Statistic } from 'antd';
+import { AreaChartOutlined, DollarOutlined, PlusCircleFilled } from '@ant-design/icons';
+import { Carousel, Col, DatePicker, Row, Segmented, Statistic, Button, Space, notification } from 'antd';
 import { Area, Line } from "@ant-design/charts";
 import { apiCall } from '../../helpers';
-import "./Dashboard.css"
+import "./styles/Dashboard.css"
 import React, { useEffect, useRef, useState } from 'react'
 import { useAuthHeader } from 'react-auth-kit';
 import moment from 'moment';
+import { useNavigate } from 'react-router-dom';
+
+const { RangePicker } = DatePicker
 
 const commaNumber = require('comma-number')
 
@@ -32,7 +35,49 @@ const Dashboard = () => {
     const [lastYear_statistic, setLastYear_statistic] = useState(false);
     const [lastYear_type_amount, setLastYear_type_amount] = useState(true);
 
+    const [dates, setDates] = useState([]);
+    const [customAggregateData, setCustomAggregateData] = useState(false);
+    const [aggregateDataType, setAggregateDataType] = useState(true)
+
     const authHeader = useAuthHeader();
+    const navigate = useNavigate();
+
+    const fetchCustomDateRangeData = () => {
+        if(dates.length < 2){
+            return notification['warning']({
+                title : "Create Dashboard",
+                description : "Please select start and end dates."
+            });
+        }
+
+        console.log(dates[0].format(), dates[1].format())
+
+        const start = dates[0].unix();
+        const end = dates[1].unix();
+
+        apiCall('/reports/dashboard/custom', {start, end}, (response) => {
+
+            const data = response.data.data;
+
+          
+            data.forEach(el => {
+
+                el.date = `${el._id.year}/${el._id.month}/${el._id.day}`;
+                
+                el.total_amount /= 100;
+                
+                delete el._id
+            });
+
+            console.log("CUSTOM AGGREGATE DATA", data);
+
+            setCustomAggregateData(data);
+
+        }, authHeader(), null, navigate);
+
+
+        
+    }
 
     const fetchYesteday = () => {
 
@@ -64,7 +109,7 @@ const Dashboard = () => {
             console.log("YESTERDAY AGGREGATE DATA", data);
             setYesterday(data);
 
-        }, authHeader());
+        }, authHeader(), null, navigate);
     }
 
     const fetchLastWeek = () => {
@@ -99,7 +144,7 @@ const Dashboard = () => {
 
             setLastWeek(data);
 
-        }, authHeader());
+        }, authHeader(), null, navigate);
     }
 
     const fetchLastYear = () => {
@@ -131,13 +176,10 @@ const Dashboard = () => {
             });
 
             console.log("LAST YEAR AGGREGATE DATA", data);
-            setTimeout(() => {
-                console.log(lastYear_statistic)
-            }, 1000);
 
             setLastYear(data);
 
-        }, authHeader());
+        }, authHeader(), null, navigate);
     }
 
     const fetchLastMonth = () => {
@@ -172,7 +214,7 @@ const Dashboard = () => {
 
             setLastMonth(data);
 
-        }, authHeader());
+        }, authHeader(), null, navigate);
     }
 
     const getYesterdayStatsData = (key) => {
@@ -410,7 +452,7 @@ const Dashboard = () => {
             date : {
                 alias : "Date",
                 formatter : (date) => {
-                    const mdate = moment(date, 'YYYY/M/D').format("Do MMM, YYYY (ddd)");
+                    const mdate = moment(date, 'YYYY/M/D').format("Do MMM, YYYY");
 
                     return mdate;
                 }
@@ -452,7 +494,7 @@ const Dashboard = () => {
                 alias : "Date",
                 formatter : (date) => {
                     
-                    const mdate = moment(date, 'YYYY/M/D').format("MMMM d, YYYY (dddd)");
+                    const mdate = moment(date, 'YYYY/M/D').format("Do MMM, YYYY");
 
                     return mdate;
                 },
@@ -556,6 +598,14 @@ const Dashboard = () => {
     return (
         <div className=" statistic-wrapper sheet" style={{minHeight : "90vh"}}>
 
+<div className="sheet menu range-picker">
+                <h3>Show for a Custom Time Range</h3>
+                <Space>
+                    <RangePicker onCalendarChange={(dates) => {if(dates.length) setDates(dates)}} />
+                    <Button onClick={() => fetchCustomDateRangeData()} icon={<AreaChartOutlined />} shape="round" type="primary">Get data</Button>
+                </Space>
+            </div>
+
             <Row>
                 <Col span={6}>
                     <div className="statistic-card sheet">
@@ -620,9 +670,34 @@ const Dashboard = () => {
             </Row>
 
             
-
+            
+            {customAggregateData && 
+                <div className="sheet">
+                    <div style={{display : "flex", flexFlow : "row", justifyContent : "space-between", alignItems : "center"}}>
+                        { dates.length == 2 && <h2>Viewing Data from {dates[0].format("Do MMMM, YYYY")} to {dates[1].format("Do MMMM, YYYY")}</h2> }
+                        <Segmented options={["Amount", "Count"]} onChange={(val) => setAggregateDataType(val === "Amount")} />
+                    </div>
+                {aggregateDataType ? 
+                    
+                    <>
+                        <h3>Amount vs Date</h3>
+                        <div className="chart-wrapper">
+                            <Area data={customAggregateData} {...lastMonth_config_1}></Area>
+                        </div>
+                    </>
+                : 
+                    <>
+                        <h3>Invoice Count vs Date</h3>
+                        <div className="chart-wrapper">
+                            <Area data={customAggregateData} {...lastMonth_config_2}></Area>
+                        </div>
+                    </>
+                }
+                </div>
+            }
             <div className="sheet">
-                <Carousel ref={ref => carousel_ref.current = ref} dotPosition='top' autoplay autoplaySpeed={5000}>
+                
+                <Carousel ref={ref => carousel_ref.current = ref} dotPosition='top' autoplaySpeed={5000}>
 
                 {/* YESTERDAY'S CHART SHEET */}
                 <div className='carousel-container'>
@@ -682,12 +757,6 @@ const Dashboard = () => {
                             </div>
                         </>
                     }
-                    <div>
-                    
-                    </div>
-                    <div>
-                        
-                    </div>
                 </div>
 
                 {/* LAST MONTH'S CHART SHEET */}

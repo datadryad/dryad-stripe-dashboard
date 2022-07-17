@@ -2,6 +2,11 @@ import { default as axios } from 'axios';
 import express from 'express';
 import { authMiddleware } from 'node-mongoose-auth/auth.js';
 import moment from 'moment';
+import https from "https";
+import fs from "fs";
+import url from 'url';
+import csv from "csvtojson"
+
 const router = express.Router();
 
 import {
@@ -12,36 +17,144 @@ import {
     toTitleCase,
     setTemporaryStatus,
     getAmountAndCountData,
+    reportNotPermitted,
 } from '../stripe.js';
 
 import Invoice from '../mongo/Invoice.js';
 
-router.post('/test', async (req, res) => {
-
-
-    const currentDate = new Date();
-    currentDate.setDate(currentDate.getDate() - 2);
-    const currentSeconds = Math.round(currentDate/1000);
-    const prevDate = new Date();
-    if(prevDate.getMonth > 0) prevDate.setMonth(prevDate.getMonth() - 1);
-    else{
-        prevDate.setMonth(11);
-        prevDate.setFullYear(prevDate.getFullYear() - 1);
+const reportVerbose = (report_type) => {
+    const dict = {
+        "balance.summary.1" : "Balance - Summary",
+        "balance_change_from_activity.summary.1" : "Balance change from activity - Summary",
+        "balance_change_from_activity.itemized.3" : "Balance change from activity - Itemized",
+        "payouts.summary.1" : "Payouts - Summary",
+        "payouts.itemized.3" : "Payouts - Itemized",
+        "payout_reconciliation.summary.1" : "Payout reconciliation - Summary",
+        "payout_reconciliation.itemized.5" : "Payout reconciliation - Itemized",
+        "ending_balance_reconciliation.summary.1" : "Ending balance reconciliation - Summary",
     }
-    const prevSeconds = Math.round(prevDate/1000);
 
-    console.log(prevSeconds, currentSeconds);
+    if(dict.hasOwnProperty(report_type)) return dict[report_type];
 
-    const reportRun = await Stripe.reporting.reportRuns.create({
-        report_type : "balance.summary.1",
-        parameters : {
-            interval_start : prevSeconds,
-            interval_end : currentSeconds
-        }
-    })
+    report_type = report_type.replaceAll('.', ' ');
+    report_type = report_type.replaceAll('_', ' ');
+
+    return report_type;
+
+}
+
+router.post('/create', authMiddleware, async (req, res) => {
+    const data = req.body;
+
+    const user = req.user;
+    
+    // if(reportNotPermitted(user, data.report_type)) return res.formatter.unauthorized(`You don't have the permission to run a ${reportVerbose(data.report_type)} Report.`);
+
+    const options = {
+        report_type : data.report_type,
+        parameters : data.parameters
+    }
+
+    const reportRun = await Stripe.reporting.reportRuns.create(options);
 
     return res.formatter.ok(reportRun);
 })
+
+router.post('/retrieve', authMiddleware, async (req, res) => {
+    const data = req.body;
+
+    const user = req.user;
+
+    // if(reportNotPermitted(user, data.report_type)) return res.formatter.unauthorized(`You don't have the permission to access a ${reportVerbose(data.report_type)} Report.`);
+
+    const reportRun = await Stripe.reporting.reportRuns.retrieve( data.report_id );
+
+    return res.formatter.ok(reportRun);
+})
+
+router.post('/file', authMiddleware, async (req, res) => {
+    const data = req.body;
+
+    const user = req.user;
+
+    // if(reportNotPermitted(user, data.report_type)) return res.formatter.unauthorized(`You don't have the permission to access a ${reportVerbose(data.report_type)} Report.`);
+
+    // Check if a file link is already present for this file.
+    let fileLink;
+    try {
+        const checkLinks = await Stripe.fileLinks.list({
+            file : data.file_id,
+            limit: 1,
+        });
+        
+        // If a file link is found, return it.
+        if(checkLinks.data.length){
+            fileLink = checkLinks.data[0];
+        }
+
+    } catch (error) {
+        // Create a file link.
+
+        console.log(error.message ? error.message : error);
+    }
+
+    if(!fileLink) fileLink = await Stripe.fileLinks.create({
+        file: data.file_id,
+    });
+
+    // console.log("Fetching data from : " + fileLink.url)
+    https.get(fileLink.url,resp => {
+
+        let data = "";
+
+        resp.on("data", (incoming_data) => {
+            data += incoming_data;
+        })
+
+        resp.on("end", async () => {
+            // console.log("data", data);
+            const str = data.toString();
+            // console.log("converted string", str);
+            const csv_data = await csv().fromString(str);
+            // console.log("csv data", csv_data);
+          return res.formatter.ok({content : csv_data, link : fileLink.url});
+        })
+
+        resp.on("error", (error) => {
+          console.log(error);
+          return res.formatter.serverError(error);
+        })
+
+    });
+
+    
+    // return res.formatter.ok(fileLink);
+})
+
+router.post('/list', authMiddleware,  async (req, res) => {
+    
+    const data = req.body;
+    
+    const user = req.user;
+    
+    console.log(data);
+    // if(notPermitted(user, "access_reports")) return res.formatter.unauthorized("You don't have the permission to access Reports.");
+
+    const options = {
+        created : data.created,
+        ending_before : data.ending_before,
+        limit : data.limit || 10,
+        starting_after : data.starting_after
+    }
+    
+    const reports = await Stripe.reporting.reportRuns.list(options);
+    console.log(reports);
+    return res.formatter.ok(reports);
+
+})
+
+
+// DASHBOARD ROUTES
 
 router.post('/dashboard/day', async (req, res) => {
 
@@ -54,7 +167,7 @@ router.post('/dashboard/day', async (req, res) => {
     let start = moment().subtract(2, "year").startOf("month").startOf("day").unix();
     // let end_date = moment().subtract(0, "month").endOf("month").endOf("day").unix();
     
-    const aggr = await Invoice.aggregate(
+    const aggr = await Invoice.aggregate([
         {
             $match : {
                 created : {
@@ -79,7 +192,50 @@ router.post('/dashboard/day', async (req, res) => {
             }
         },
         {$sort: {_id: 1}}
-    );
+    ]);
+
+    return res.formatter.ok(aggr);
+    
+
+})
+
+router.post('/dashboard/custom', async (req, res) => {
+
+    const data = req.body;
+
+    // const start = data.start
+    // const end = data.end
+
+    // previous month
+    let start = moment().subtract(2, "year").startOf("month").startOf("day").unix();
+    let end = moment().subtract(0, "month").endOf("month").endOf("day").unix();
+    
+    const aggr = await Invoice.aggregate([
+        {
+            $match : {
+                created : {
+                    $gte : data.start,
+                    $lte : data.end
+                },
+                // status : "open"
+            }
+        },
+        {
+            $group : {
+                "_id": {
+                    "year": { "$year": "$created_date"},
+                        "month": { "$month": "$created_date"},
+                        "day": { "$dayOfMonth": "$created_date"}
+                },
+                count : { $sum : 1 },
+                total_amount : {
+                    $sum : "$amount_due"
+                },
+
+            }
+        },
+        {$sort: {_id: 1}}
+    ]);
 
     return res.formatter.ok(aggr);
     
@@ -97,7 +253,7 @@ router.post('/dashboard/week', async (req, res) => {
     let start = moment().subtract(2, "year").startOf("month").startOf("day").unix();
     let end = moment().subtract(0, "month").endOf("month").endOf("day").unix();
     
-    const aggr = await Invoice.aggregate(
+    const aggr = await Invoice.aggregate([
         {
             $match : {
                 created : {
@@ -122,7 +278,7 @@ router.post('/dashboard/week', async (req, res) => {
             }
         },
         {$sort: {_id: 1}}
-    );
+    ]);
 
     return res.formatter.ok(aggr);
     
@@ -140,7 +296,8 @@ router.post('/dashboard/month', async (req, res) => {
     let start = moment().subtract(2, "year").startOf("month").startOf("day").unix();
     let end = moment().subtract(0, "month").endOf("month").endOf("day").unix();
     
-    const aggr = await Invoice.aggregate(
+    const aggr = await Invoice.aggregate([
+
         {
             $match : {
                 created : {
@@ -165,7 +322,8 @@ router.post('/dashboard/month', async (req, res) => {
             }
         },
         {$sort: {_id: 1}}
-    );
+    
+    ]);
 
     return res.formatter.ok(aggr);
     
@@ -183,7 +341,8 @@ router.post('/dashboard/year', async (req, res) => {
     let start = moment().subtract(1, "year").startOf("year").startOf("day").unix();
     let end = moment().subtract(1, "year").endOf("year").endOf("day").unix();
     
-    const aggr = await Invoice.aggregate(
+    const aggr = await Invoice.aggregate([
+
         {
             $match : {
                 created : {
@@ -207,43 +366,11 @@ router.post('/dashboard/year', async (req, res) => {
             }
         },
         {$sort: {_id: 1}}
-    );
+    
+    ]);
 
     return res.formatter.ok(aggr);
     
 })
-
-router.post('/retrieve', async (req, res) => {
-    // console.log(req.body)
-    // return;
-    const reportRun = await Stripe.reporting.reportRuns.retrieve(
-        req.body.report_run_id
-      );
-    
-    let data = {};
-    if(reportRun.result && reportRun.result.url){
-        console.log(reportRun.result.url)
-        const file = await axios({
-            method : "get",
-            url : reportRun.result.url,
-            auth : {
-                username : "sk_test_fX9EovHjWMI7pR7saJuJ6Cka",
-                password : "test"
-            }
-        }).then((response, error) => {
-            data = response.data;
-            console.log(data)
-        }).catch((error) => {
-            console.log(error.response);
-        })
-    }
-
-
-
-    return res.formatter.ok({
-        reportRun,
-        data
-    });
-} )
 
 export default router; 

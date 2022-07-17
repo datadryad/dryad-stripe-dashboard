@@ -4,10 +4,27 @@
     justify-content: space-between;
     align-items: center;
     border-radius: 1em 1em 0em 0em!important;
+    box-shadow: 0px 0px 10px 0px #7f5a83;
+    background-color: #7f5a83;
+    background-image: linear-gradient(315deg, #5f3c63 0%, #0d324d 74%);
+}
+.envelope-sub{
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 300px;
 }
 
-.envelope * {
+.envelope *:not(.ant-tag) {
     color: rgb(228, 228, 228) !important;
+}
+u{
+    text-decoration: underline;
+}
+
+.underline{
+    text-decoration: underline;
 }
 /* 
 .envelope > div{

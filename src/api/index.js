@@ -28,7 +28,7 @@ import { initiateRestore } from './stripe.js';
 // const UserSchema = require("node-mongoose-auth/models/UserSchema").add({permissions : String});
 
 const app = express()
-const port = 3000;
+const port = 4000;
 app.use(cors())
 
 const MONGO_URI = `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@${process.env.MONGO_SERVICE_HOST}:${process.env.MONGO_SERVICE_PORT}/${process.env.MONGO_INITDB_DATABASE}?authSource=admin`
@@ -39,7 +39,6 @@ mongoose.connect(MONGO_URI, {useNewUrlParser: true, useUnifiedTopology: true}).t
   initiateRestore();
   
   app.use('/auth', authRouter);
-  app.use('/reports', reportRoutes);
 
 });
 
@@ -51,6 +50,7 @@ app.use(express.urlencoded({ extended: true }));
 
 
 app.use('/invoices', invoiceRoutes);
+app.use('/reports', reportRoutes);
 
 app.use('/user', AuthRoutes);
 
@@ -87,11 +87,5 @@ app.use('/user', AuthRoutes);
 
 //   app._router.stack.forEach(print.bind(null, []))
 // PRINT ROUTES
-
-
-app.use(express.static(path.join(__dirname, '..', '..', 'build')));
-app.get('/*', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', '..', 'build', 'index.html'));
-});
 
 app.listen(port, () => console.log(`Backend API listening on port ${port}!`))

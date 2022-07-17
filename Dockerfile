@@ -12,12 +12,11 @@ RUN apt-get update && apt-get install -yqq nginx && \
   chown -R node /app /home/node /etc/nginx /var/log/nginx /var/lib/nginx /usr/share/nginx && \
   rm -rf /var/lib/apt/lists/*
 
-# USER node
+USER node
 
 COPY package.json yarn.loc[k] package-lock.jso[n] /app/
 
-RUN npm set unsafe-perm true
-RUN npm install --production --no-cache --no-audit --unsafe-perm
+RUN npm install --production --no-cache --no-audit
 
 COPY . /app/
 

@@ -9,5 +9,5 @@ spec:
           - backend:
               serviceName: stripe-app-frontend
               servicePort: 8080
-      host: fishii.stripe.app
+      host: stripe-app.local
 

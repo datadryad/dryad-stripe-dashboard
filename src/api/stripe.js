@@ -4,6 +4,7 @@ import Invoice from './mongo/Invoice.js';
 import StripeFactory from 'stripe';
 
 export const Stripe = StripeFactory('sk_test_fX9EovHjWMI7pR7saJuJ6Cka');
+// export const Stripe = StripeFactory('sk_test_51LIUymSIt9fpyvh6mswNEo5zCGruv8fBzLEm88rgrktfE9ZCfIz6W5AitmHbzm58hCCMs08CLEuKXo2b2aD2o2jo00MXP01MiL');
 
 export const handleError = (res, err) => {
     // console.error(err);
@@ -39,6 +40,15 @@ export const setTemporaryStatus = async (invoice_id, temporary_status) => {
 export const notPermitted = (user, permission) => {
     if(!user.permissions.has(permission)) return true;
     if(user.permissions.get(permission) === "false") return true;
+
+    return false;
+}
+
+export const reportNotPermitted = (user, permission) => {
+    if(!user.permissions.has("report")) return true;
+    const perms = user.permissions.get("report");
+    
+    if(!perms.has(permission) || perms.get(permission) === "false") return true;
 
     return false;
 }
@@ -108,7 +118,14 @@ export const initiateRestore = async () => {
         console.log("Latest saved Invoice record found is : ", latest_local_record_object._id);
         console.log("Looking for any Invoice records created after the latest local invoice...");
         
-        current_dataset.data.push({id : latest_local_record_object._id});
+        try {
+            await Stripe.invoices.retrieve(latest_local_record_object._id);
+            current_dataset.data.push({id : latest_local_record_object._id});
+        } catch (error) {
+            console.log("Couldn't find latest saved Invoice from local db in Stripe account, deleting all local records and fetching all Invoices from Stripe to avoid any discrepancies.")
+            await Invoice.deleteMany({});
+            fetching_all = true;
+        }
     }else{
         fetching_all = true;
         console.log("No saved Invoice records found locally. Initiating restore...");
@@ -117,7 +134,7 @@ export const initiateRestore = async () => {
 
     
     let inv_count = 0, inv_index = 1;
-
+    console.log("Starting Sync...")
     while(current_dataset.has_more){
 
         const listObject = {

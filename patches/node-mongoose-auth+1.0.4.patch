@@ -27,27 +27,57 @@ index b4ea1f7..fcb1110 100644
  module.exports = mongoose.model("User", UserSchema);
 \ No newline at end of file
 diff --git a/node_modules/node-mongoose-auth/models/UserSchema.js b/node_modules/node-mongoose-auth/models/UserSchema.js
-index 77efdd6..bae1d1a 100644
+index 77efdd6..1a4aad0 100644
 --- a/node_modules/node-mongoose-auth/models/UserSchema.js
 +++ b/node_modules/node-mongoose-auth/models/UserSchema.js
-@@ -101,6 +101,39 @@ const UserSchema = mongoose.Schema(
+@@ -36,12 +36,12 @@ const UserSchema = mongoose.Schema(
+   {
+     firstName: {
+       type: String,
+-      required: true,
++      required: false,
+       max: 25,
+     },
+     lastName: {
+       type: String,
+-      required: true,
++      required: false,
+       max: 25,
+     },
+     email: {
+@@ -55,7 +55,7 @@ const UserSchema = mongoose.Schema(
+     sex: {
+       type: String,
+       enum: ["Male", "Female"],
+-      required: true,
++      required: false,
+     },
+     mobile: {
+       type: String,
+@@ -101,6 +101,45 @@ const UserSchema = mongoose.Schema(
        type: Boolean,
        default: false,
      },
-+    test : {
-+      type: Boolean,
-+      default: true
-+    },
 +    permissions: {
 +      type : Map,
 +      of : String,
 +      required : true,
 +      default : {
++        //
 +        // View Invoice
 +        view_invoice : false,
 +        // Handle Reports
-+        view_report : false,
-+        view_detailed_report : false,
++        access_reports : false,
++        reports : {
++          "balance.summary.1" : false,
++          "balance_change_from_activity.summary.1" : false,
++          "balance_change_from_activity.itemized.3" : false,
++          "payouts.summary.1" : false,
++          "payouts.itemized.3" : false,
++          "payout_reconciliation.summary.1" : false,
++          "payout_reconciliation.itemized.5" : false,
++          "ending_balance_reconciliation.summary.1" : false,
++        },
 +        // Handle refunds
 +        set_refund : false,
 +        set_to_be_refund : false,
@@ -71,7 +101,7 @@ index 77efdd6..bae1d1a 100644
    { timestamps: true }
  );
 diff --git a/node_modules/node-mongoose-auth/routes/users.js b/node_modules/node-mongoose-auth/routes/users.js
-index 999c7c3..0e3e030 100644
+index 999c7c3..606c60c 100644
 --- a/node_modules/node-mongoose-auth/routes/users.js
 +++ b/node_modules/node-mongoose-auth/routes/users.js
 @@ -1,13 +1,22 @@
@@ -84,7 +114,7 @@ index 999c7c3..0e3e030 100644
  
 +const connectIfRequired = async () => {
 +  const MONGO_URI = `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@${process.env.MONGO_SERVICE_HOST}:${process.env.MONGO_SERVICE_PORT}/${process.env.MONGO_INITDB_DATABASE}?authSource=admin`
-+  await mongoose.connect(MONGO_URI, {useNewUrlParser: true, useUnifiedTopology: true});
++  if(mongoose.connection.readyState != 1) await mongoose.connect(MONGO_URI, {useNewUrlParser: true, useUnifiedTopology: true});
 +  return;
 +}
 +
@@ -106,12 +136,11 @@ index 999c7c3..0e3e030 100644
      await auth.setPassword(user, password);
      await user.save();
  
-@@ -34,6 +45,8 @@ router.post("/register", async (req, res) => {
+@@ -34,6 +45,7 @@ router.post("/register", async (req, res) => {
  
  
  router.post("/login", async (req, res) => {
 +  await connectIfRequired();
-+  
    const { email, password } = req.body;
    
    const user = await User.findOne({ email });

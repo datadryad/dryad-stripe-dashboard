@@ -6,7 +6,7 @@ import Wave from "react-wavify";
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useHistory } from 'react-router-dom';
 import { apiCall } from '../../helpers';
-import { useSignIn,  } from 'react-auth-kit';
+import { useSignIn } from 'react-auth-kit';
 
 const Login = () => {
 
@@ -36,11 +36,11 @@ const Login = () => {
 
 
         apiCall("/auth/login", {
-            email : "hrushikeshchapke@gmail.com",
-            password : "password"
+            email : login_email,
+            password : login_password
         }, (response, error) => {
             console.log("LOGIN CALL RESPONSE",response, error);
-            navigate('/sheet/invoice/list');
+            navigate('/sheet/');
             if(response.data.token){
                 if(signIn({
                     token: response.data.token,
@@ -67,6 +67,25 @@ const Login = () => {
             setRegister_errors(errors);
             return;
         }
+
+        apiCall("/auth/register", {
+            email : register_email,
+            password : register_password
+        }, (response, error) => {
+            console.log("REGISTER CALL RESPONSE",response, error);
+            navigate('/sheet/');
+            if(response.data.token){
+                if(signIn({
+                    token: response.data.token,
+                    expiresIn: 86400,
+                    tokenType: "Bearer",
+                    authState: response.data.user,
+                })){
+                    
+                }
+                
+            }
+        })
 
 
     }

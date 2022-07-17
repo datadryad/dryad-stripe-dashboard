@@ -14,7 +14,7 @@ import {
 
 router.post('/list', async (req, res) => {
 
-    const data = req.params;
+    const data = req.body;
 
     const options = {
         collection_method : data.collection_method,

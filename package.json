@@ -14,11 +14,12 @@
     "cookie-parser": "^1.4.6",
     "cookie-session": "^2.0.0",
     "cors": "^2.8.5",
+    "csvtojson": "^2.0.10",
     "currency-symbol-map": "^5.1.0",
     "deploy-node-app": "^1.4.3",
     "dotenv": "^8.0.0",
     "express-respond": "^1.6.1",
-    "express-response-formatter": "^2.0.0",
+    "express-response-formatter": "^2.0.2",
     "express-session": "^1.17.3",
     "human-date": "^1.4.0",
     "moment": "^2.29.4",
@@ -75,7 +76,14 @@
       "port": 4000,
       "protocol": "http",
       "entrypoint": "src/api/index.js",
-      "type": "spa"
+      "type": "spa",
+      "context": "minikube",
+      "registry": "index.docker.io/v1/",
+      "registryUsername": "fishii",
+      "isPublic": true,
+      "domains": [
+        "stripe-app.local"
+      ]
     },
     "dev": {
       "port": 4000,

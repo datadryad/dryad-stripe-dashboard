@@ -28,7 +28,7 @@ spec:
         deployedBy: deploy-node-app
     spec:
       containers:
-        - image: 'fishii/stripe-app:6b5d90b'
+        - image: 'fishii/stripe-app:3c34266'
           imagePullPolicy: Always
           name: stripe-app
           command:

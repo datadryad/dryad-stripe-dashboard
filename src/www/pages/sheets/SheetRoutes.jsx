@@ -1,10 +1,10 @@
 import React, {useState, useEffect} from 'react'
-import { BookOutlined, LayoutOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
+import { AreaChartOutlined, BookOutlined, LayoutOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { Affix, Button, Menu } from 'antd';
 import Layout from 'antd/lib/layout/layout';
 import Sider from 'antd/lib/layout/Sider';
 import { useAuthUser, useSignOut } from 'react-auth-kit';
-import { Route, Routes, useNavigate } from "react-router-dom";
+import { Link, Route, Routes, useNavigate } from "react-router-dom";
 import { MenuItem } from 'semantic-ui-react';
 import { ListInvoicesSheet, ListReportsSheet } from '.';
 import Dashboard from './Dashboard';
@@ -71,12 +71,29 @@ export default () => {
                 mode="inline"
                 // items={items}
                 >
-                    <Menu.Item key={1}  icon={<LayoutOutlined className='sidebar-icon' />}>{!collapsed && "Access Invoices"}</Menu.Item>
-                    {(user.permissions && user.permissions.view_invoice) && 
-                        <Menu.Item key={2}  icon={<BookOutlined className='sidebar-icon' />}>{!collapsed && "Check Reports"}</Menu.Item>
+                    <Menu.Item key={0}  icon={<AreaChartOutlined className='sidebar-icon' />}>
+                        <Link to="/sheet">
+                            {!collapsed && "Dashboard"}
+                        </Link>
+                    </Menu.Item>
+                    <Menu.Item key={1}  icon={<LayoutOutlined className='sidebar-icon' />}>
+                        <Link to="/sheet/invoice/list">
+                            {!collapsed && "Access Invoices"}
+                        </Link>
+                    </Menu.Item>
+                    {(user.permissions && user.permissions.access_reports) && 
+                        <Menu.Item key={2}  icon={<BookOutlined className='sidebar-icon' />}>
+                            <Link to="/sheet/report/list">
+                                {!collapsed && "Check Reports"}
+                            </Link>
+                        </Menu.Item>
                     }
-                    {!user.isAdmin && 
-                        <Menu.Item key={3}  icon={<UserOutlined className='sidebar-icon' />}>{!collapsed && "Manage Users"}</Menu.Item>
+                    {user.isAdmin && 
+                        <Menu.Item key={3}  icon={<UserOutlined className='sidebar-icon' />}>
+                            <Link to="/sheet/users/list">
+                                {!collapsed && "Manage Users"}
+                            </Link>
+                        </Menu.Item>
                     }
                 </Menu>
             </Sider>

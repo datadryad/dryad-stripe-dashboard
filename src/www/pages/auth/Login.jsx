@@ -40,7 +40,7 @@ const Login = () => {
             password : login_password
         }, (response, error) => {
             console.log("LOGIN CALL RESPONSE",response, error);
-            navigate('/sheet/');
+            
             if(response.data.token){
                 if(signIn({
                     token: response.data.token,
@@ -48,7 +48,7 @@ const Login = () => {
                     tokenType: "Bearer",
                     authState: response.data.user,
                 })){
-                    
+                    navigate('/sheet/');        
                 }
                 
             }
@@ -73,7 +73,7 @@ const Login = () => {
             password : register_password
         }, (response, error) => {
             console.log("REGISTER CALL RESPONSE",response, error);
-            navigate('/sheet/');
+            
             if(response.data.token){
                 if(signIn({
                     token: response.data.token,
@@ -81,7 +81,7 @@ const Login = () => {
                     tokenType: "Bearer",
                     authState: response.data.user,
                 })){
-                    
+                    navigate('/sheet/');        
                 }
                 
             }

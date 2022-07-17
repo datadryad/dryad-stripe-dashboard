@@ -27,7 +27,7 @@ index b4ea1f7..fcb1110 100644
  module.exports = mongoose.model("User", UserSchema);
 \ No newline at end of file
 diff --git a/node_modules/node-mongoose-auth/models/UserSchema.js b/node_modules/node-mongoose-auth/models/UserSchema.js
-index 77efdd6..1a4aad0 100644
+index 77efdd6..9025494 100644
 --- a/node_modules/node-mongoose-auth/models/UserSchema.js
 +++ b/node_modules/node-mongoose-auth/models/UserSchema.js
 @@ -36,12 +36,12 @@ const UserSchema = mongoose.Schema(
@@ -60,7 +60,7 @@ index 77efdd6..1a4aad0 100644
      },
 +    permissions: {
 +      type : Map,
-+      of : String,
++      of : mongoose.Schema.Types.Mixed,
 +      required : true,
 +      default : {
 +        //
@@ -69,14 +69,14 @@ index 77efdd6..1a4aad0 100644
 +        // Handle Reports
 +        access_reports : false,
 +        reports : {
-+          "balance.summary.1" : false,
-+          "balance_change_from_activity.summary.1" : false,
-+          "balance_change_from_activity.itemized.3" : false,
-+          "payouts.summary.1" : false,
-+          "payouts.itemized.3" : false,
-+          "payout_reconciliation.summary.1" : false,
-+          "payout_reconciliation.itemized.5" : false,
-+          "ending_balance_reconciliation.summary.1" : false,
++          "balance_summary_1" : false,
++          "balance_change_from_activity_summary_1" : false,
++          "balance_change_from_activity_itemized_3" : false,
++          "payouts_summary_1" : false,
++          "payouts_itemized_3" : false,
++          "payout_reconciliation_summary_1" : false,
++          "payout_reconciliation_itemized_5" : false,
++          "ending_balance_reconciliation_summary_1" : false,
 +        },
 +        // Handle refunds
 +        set_refund : false,

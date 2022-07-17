@@ -81,14 +81,14 @@ export default () => {
                             {!collapsed && "Access Invoices"}
                         </Link>
                     </Menu.Item>
-                    {(user.permissions && user.permissions.access_reports) && 
+                    {(user.permissions && user.permissions.access_reports) || true && 
                         <Menu.Item key={2}  icon={<BookOutlined className='sidebar-icon' />}>
                             <Link to="/sheet/report/list">
                                 {!collapsed && "Check Reports"}
                             </Link>
                         </Menu.Item>
                     }
-                    {user.isAdmin && 
+                    {user.isAdmin || true && 
                         <Menu.Item key={3}  icon={<UserOutlined className='sidebar-icon' />}>
                             <Link to="/sheet/users/list">
                                 {!collapsed && "Manage Users"}

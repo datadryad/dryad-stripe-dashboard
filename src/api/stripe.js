@@ -48,7 +48,8 @@ export const reportNotPermitted = (user, permission) => {
     if(!user.permissions.has("report")) return true;
     const perms = user.permissions.get("report");
     
-    if(!perms.has(permission) || perms.get(permission) === "false") return true;
+    const rep_permission = permission.replaceAll('.', '_');
+    if(!perms.has(rep_permission) || perms.get(rep_permission) === "false") return true;
 
     return false;
 }

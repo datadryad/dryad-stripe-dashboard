@@ -606,68 +606,72 @@ const Dashboard = () => {
                 </Space>
             </div>
 
+            {!customAggregateData && 
+            
             <Row>
-                <Col span={6}>
-                    <div className="statistic-card sheet">
-                        <h3>Yesterday</h3>
-                        <div className="statistic-container" onMouseOver={() => carousel_ref.current.goTo(0)}>
-                            <Row gutter={16} justify="space-between">
-                                <Col>
-                                    <Statistic loading={!yesterday_statistic} title='Amount' prefix={<DollarOutlined/>} value={yesterday_statistic && commaNumber(yesterday_statistic.amount)} />
-                                </Col>
-                                <Col>
-                                    <Statistic loading={!yesterday_statistic} title='Invoices' prefix={<PlusCircleFilled />} value={yesterday_statistic && commaNumber(yesterday_statistic.count)} />
-                                </Col>
-                            </Row>
-                        </div>
+            <Col span={6}>
+                <div className="statistic-card sheet">
+                    <h3>Yesterday</h3>
+                    <div className="statistic-container" onMouseOver={() => carousel_ref.current.goTo(0)}>
+                        <Row gutter={16} justify="space-between">
+                            <Col>
+                                <Statistic loading={!yesterday_statistic} title='Amount' prefix={<DollarOutlined/>} value={yesterday_statistic && commaNumber(yesterday_statistic.amount)} />
+                            </Col>
+                            <Col>
+                                <Statistic loading={!yesterday_statistic} title='Invoices' prefix={<PlusCircleFilled />} value={yesterday_statistic && commaNumber(yesterday_statistic.count)} />
+                            </Col>
+                        </Row>
                     </div>
-                </Col>
-                <Col span={6}>
-                    <div className="statistic-card sheet">
-                        <h3>Last Week</h3>
-                        <div className="statistic-container" onMouseOver={() => carousel_ref.current.goTo(1)}>
-                            <Row gutter={16} justify="space-between">
-                                <Col>
-                                    <Statistic loading={!lastWeek_statistic} title='Amount' prefix={<DollarOutlined/>} value={lastWeek_statistic && commaNumber(lastWeek_statistic.amount)} />
-                                </Col>
-                                <Col>
-                                    <Statistic loading={!lastWeek_statistic} title='Invoices' prefix={<PlusCircleFilled />} value={lastWeek_statistic && commaNumber(lastWeek_statistic.count)} />
-                                </Col>
-                            </Row>
-                        </div>
+                </div>
+            </Col>
+            <Col span={6}>
+                <div className="statistic-card sheet">
+                    <h3>Last Week</h3>
+                    <div className="statistic-container" onMouseOver={() => carousel_ref.current.goTo(1)}>
+                        <Row gutter={16} justify="space-between">
+                            <Col>
+                                <Statistic loading={!lastWeek_statistic} title='Amount' prefix={<DollarOutlined/>} value={lastWeek_statistic && commaNumber(lastWeek_statistic.amount)} />
+                            </Col>
+                            <Col>
+                                <Statistic loading={!lastWeek_statistic} title='Invoices' prefix={<PlusCircleFilled />} value={lastWeek_statistic && commaNumber(lastWeek_statistic.count)} />
+                            </Col>
+                        </Row>
                     </div>
-                </Col>
-                <Col span={6}>
-                    <div className="statistic-card sheet">
-                        <h3>Last Month</h3>
-                        <div className="statistic-container" onMouseOver={() => carousel_ref.current.goTo(2)}>
-                            <Row gutter={16} justify="space-between">
-                                <Col>
-                                    <Statistic loading={!lastMonth_statistic} title='Amount' prefix={<DollarOutlined/>} value={lastMonth_statistic && commaNumber(lastMonth_statistic.amount)} />
-                                </Col>
-                                <Col>
-                                    <Statistic loading={!lastMonth_statistic} title='Invoices' prefix={<PlusCircleFilled />} value={lastMonth_statistic && commaNumber(lastMonth_statistic.count)} />
-                                </Col>
-                            </Row>
-                        </div>
+                </div>
+            </Col>
+            <Col span={6}>
+                <div className="statistic-card sheet">
+                    <h3>Last Month</h3>
+                    <div className="statistic-container" onMouseOver={() => carousel_ref.current.goTo(2)}>
+                        <Row gutter={16} justify="space-between">
+                            <Col>
+                                <Statistic loading={!lastMonth_statistic} title='Amount' prefix={<DollarOutlined/>} value={lastMonth_statistic && commaNumber(lastMonth_statistic.amount)} />
+                            </Col>
+                            <Col>
+                                <Statistic loading={!lastMonth_statistic} title='Invoices' prefix={<PlusCircleFilled />} value={lastMonth_statistic && commaNumber(lastMonth_statistic.count)} />
+                            </Col>
+                        </Row>
                     </div>
-                </Col>
-                <Col span={6}>
-                    <div className="statistic-card sheet">
-                        <h3>Last Yar</h3>
-                        <div className="statistic-container" onMouseOver={() => carousel_ref.current.goTo(3)}>
-                            <Row gutter={16} justify="space-between">
-                                <Col>
-                                    <Statistic loading={!lastYear_statistic} title='Amount' prefix={<DollarOutlined/>} value={lastYear_statistic && commaNumber(lastYear_statistic.amount)} />
-                                </Col>
-                                <Col>
-                                    <Statistic loading={!lastYear_statistic} title='Invoices' prefix={<PlusCircleFilled />} value={lastYear_statistic && commaNumber(lastYear_statistic.count)} />
-                                </Col>
-                            </Row>
-                        </div>
+                </div>
+            </Col>
+            <Col span={6}>
+                <div className="statistic-card sheet">
+                    <h3>Last Yar</h3>
+                    <div className="statistic-container" onMouseOver={() => carousel_ref.current.goTo(3)}>
+                        <Row gutter={16} justify="space-between">
+                            <Col>
+                                <Statistic loading={!lastYear_statistic} title='Amount' prefix={<DollarOutlined/>} value={lastYear_statistic && commaNumber(lastYear_statistic.amount)} />
+                            </Col>
+                            <Col>
+                                <Statistic loading={!lastYear_statistic} title='Invoices' prefix={<PlusCircleFilled />} value={lastYear_statistic && commaNumber(lastYear_statistic.count)} />
+                            </Col>
+                        </Row>
                     </div>
-                </Col>
-            </Row>
+                </div>
+            </Col>
+        </Row>    
+
+            }
 
             
             

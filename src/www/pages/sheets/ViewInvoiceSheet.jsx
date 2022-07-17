@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { apiCall, getDateObject } from '../../helpers';
 import gradient from 'random-gradient';
 import "./styles/ViewInvoiceSheet.css"
-import { Col, Divider, Tag, Row, Button, Table } from 'antd';
+import { Col, Divider, Tag, Row, Button, Table, Skeleton } from 'antd';
 import StatusTag from './snippets/StatusTag';
 import { RollbackOutlined } from '@ant-design/icons';
 import { useAuthHeader } from 'react-auth-kit';
@@ -85,7 +85,7 @@ const ViewInvoiceSheet = () => {
     return (
         <div className='sheet'>
             <div className='sheet envelope no-margin' >
-                {invoice.id && 
+                {invoice.id ?
                     <>
                         <div>
                             <h1>{(invoice.customer_name) ? `${invoice.customer_name.split(" ")[0]}'s Invoice` : "Invoice"} </h1>
@@ -106,9 +106,11 @@ const ViewInvoiceSheet = () => {
                             </div>
                         </div>
                     </>
+                    :
+                    <Skeleton active />
                 }
             </div>
-            {invoice.id && 
+            {invoice.id ?
             
             <div className="sheet no-margin invoice-container">
                 <Row gutter={16}>
@@ -138,7 +140,8 @@ const ViewInvoiceSheet = () => {
                 <Divider/>
                 <Table columns={cols} dataSource={items} />
             </div>
-
+                :
+            <Skeleton active />
             }
             <Divider/>
         </div>

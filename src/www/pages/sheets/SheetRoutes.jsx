@@ -52,7 +52,7 @@ export default () => {
 
 
     return (
-        <Layout>
+        <Layout style={{minHeight : '100vh'}}>
             <Affix> 
                 <Menu className='menubar' theme="dark" style={{backgroundColor : "red !important"}} mode='horizontal'>
 

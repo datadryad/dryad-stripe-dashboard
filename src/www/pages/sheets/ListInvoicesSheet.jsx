@@ -327,7 +327,7 @@ const ListInvoicesSheet =  () => {
     return (
         <div className='sheet'>
             <Space/>
-            <h1>Invoices </h1>
+            <h2>Invoices </h2>
             
             <Table loading={loading} dataSource={invoices} columns={columns} onChange={onChange} />
             

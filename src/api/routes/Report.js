@@ -137,7 +137,7 @@ router.post('/list', authMiddleware,  async (req, res) => {
     
     const user = req.user;
     
-    console.log(data);
+    // console.log(data);
     // if(notPermitted(user, "access_reports")) return res.formatter.unauthorized("You don't have the permission to access Reports.");
 
     const options = {
@@ -148,7 +148,7 @@ router.post('/list', authMiddleware,  async (req, res) => {
     }
     
     const reports = await Stripe.reporting.reportRuns.list(options);
-    console.log(reports);
+    // console.log(reports);
     return res.formatter.ok(reports);
 
 })

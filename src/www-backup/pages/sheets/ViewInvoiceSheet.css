@@ -1,0 +1,44 @@
+.envelope{
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 1em 1em 0em 0em!important;
+}
+
+.envelope * {
+    color: rgb(228, 228, 228) !important;
+}
+/* 
+.envelope > div{
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+    align-items: center;
+} */
+
+.envelope .row{
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.invoice-container{
+    border-radius: 0 0 1em 1em;
+    width: 100%;
+    padding-top: 3em;
+}
+.invoice-container h3, .invoice-container h4{
+    padding: 0.2em 0.3em;
+    line-height: 1em;
+}
+
+.bulky-divider{
+    height: 0.4em;
+    width: 100%;
+    background-color: black;
+    border-radius: 4px ;
+    margin-bottom: 1em;
+}

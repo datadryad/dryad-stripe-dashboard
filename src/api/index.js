@@ -1,7 +1,7 @@
 import express from 'express';
 import path from "path";
 import {fileURLToPath} from 'url';
-
+import jwt from "jsonwebtoken";
 import {default as dotenv} from 'dotenv';
 dotenv.config();
 // require('dotenv').config();
@@ -24,7 +24,10 @@ process.env.SECRET_KEY = "DEV";
 import { authRouter } from 'node-mongoose-auth';
 import mongoose from 'mongoose';
 import AuthRoutes from './routes/Auth.js';
-import { initiateRestore } from './stripe.js';
+import { initiateRestore, Stripe } from './stripe.js';
+import { createServer } from 'http';
+import { WebSocketServer } from 'ws';
+import { addActiveUserSession } from './websocket_utils.js';
 // const UserSchema = require("node-mongoose-auth/models/UserSchema").add({permissions : String});
 
 const app = express()
@@ -88,4 +91,55 @@ app.use('/user', AuthRoutes);
 //   app._router.stack.forEach(print.bind(null, []))
 // PRINT ROUTES
 
-app.listen(port, () => console.log(`Backend API listening on port ${port}!`))
+const server = app.listen(port, () => console.log(`Backend API listening on port ${port}!`));
+
+const wss = new WebSocketServer({noServer : true});
+
+global.sessions_mapping = {};
+wss.on('connection', async function connection(ws, request, user_id, report_id) {
+
+  
+
+  await addActiveUserSession( report_id, ws);
+  const reportRun = await Stripe.reporting.reportRuns.retrieve( report_id );
+
+  if(reportRun.status !== "pending"){
+    ws.send(JSON.stringify(reportRun));
+    ws.close();
+  }
+
+  ws.on('message', function message(data) {
+    ws.send(data);
+
+  });
+  
+  ws.send('Connection successful.');
+});
+
+server.on('upgrade', async function upgrade(request, socket, head) {      //handling upgrade(http to websocekt) event
+
+
+  //emit connection when request accepted
+  wss.handleUpgrade(request, socket, head, async function done(ws) {
+
+    try {
+      const search= request.url.substring(1);
+      const params = new URLSearchParams(search);
+
+      const auth_token = params.get("auth_token");
+      const report_id = params.get("report_id");
+
+      // console.log(auth_token, report_id);
+
+      const user_data = await jwt.verify(auth_token, process.env.SECRET_KEY);
+      
+      wss.emit('connection', ws, request, user_data.id, report_id);
+    } catch (error) {
+      console.log(error.message || error);
+      socket.destroy();
+    }
+  });
+});
+
+
+

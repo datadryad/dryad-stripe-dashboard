@@ -9,7 +9,7 @@ import { useSignOut } from 'react-auth-kit';
 // export const API_URL = `${window.location.protocol}//${window.location.hostname}:${process.env.PORT || 3000}`;
 
 let backend_api_url = `${window.location.protocol}//${window.location.hostname}`;
-if(window.location.hostname == "localhost") backend_api_url += ":3000";
+if(window.location.hostname == "localhost") backend_api_url += ":4000";
 
 export const API_URL = backend_api_url;
 export const apiCall = (route, data, callback, token, loadingCallbackState, navigate) => {
@@ -23,16 +23,7 @@ export const ReportError = (axios_response, navigate) => {
     }
     
     console.log("CAUGHT API CALL ERROR : ", axios_response);
-    if(axios_response.response.status === 403){
-        notif.message = "Your Session has timed out.";
-        notif.description = "Please sign in again to continue.";
-        notification['error'](notif);
-
-        navigate("/")
-
-        return;
-        
-    }
+    
 
     notif = {
         message : "There was an error.",
@@ -48,6 +39,16 @@ export const ReportError = (axios_response, navigate) => {
         })
 
         return;
+    }
+    if(axios_response.response.status === 403){
+        notif.message = "Your Session has timed out.";
+        notif.description = "Please sign in again to continue.";
+        notification['error'](notif);
+
+        navigate("/")
+
+        return;
+        
     }
     const response = axios_response.response;
 

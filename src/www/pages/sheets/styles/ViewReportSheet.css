@@ -1,0 +1,17 @@
+.main.sheet{
+    min-height: 70vh;
+}
+
+.ant-select{
+    min-width: 300px !important;
+}
+
+.category-select.ant-select{
+    min-width: 160px !important;
+    
+}
+
+.category-select.ant-select > *{
+    font-size: 21px !important;
+    font-weight: 500 !important;
+}

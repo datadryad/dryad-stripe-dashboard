@@ -83,7 +83,7 @@ export default () => {
                     </Menu.Item>
                     {(user.permissions && user.permissions.access_reports) || true && 
                         <Menu.Item key={2}  icon={<BookOutlined className='sidebar-icon' />}>
-                            <Link to="/sheet/report/list">
+                            <Link to="/sheet/report/view">
                                 {!collapsed && "Check Reports"}
                             </Link>
                         </Menu.Item>
@@ -103,7 +103,7 @@ export default () => {
                 <Route path="invoice/list" element={<ListInvoicesSheet/>} />
                 <Route path="invoice/view/:invoice_id" element={<ViewInvoiceSheet/>} />
                 <Route path="report/list" element={<ListReportsSheet/>} />
-                <Route path="report/view/:report_id" element={<ViewReportSheet/>} />
+                <Route path="report/view/" element={<ViewReportSheet/>} />
             </Routes>
             </Layout>
             </Layout>

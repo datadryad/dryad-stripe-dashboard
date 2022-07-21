@@ -270,7 +270,7 @@ const ViewReportSheet = () => {
             const report = response.data.data;
             const ah = authHeader();
             const token = ah.split(" ")[1];
-            const url = `ws://${window.location.hostname}${window.location.hostname == "localhost" ? ":4000" : ""}/?auth_token=${token}&report_id=${report.id}`
+            const url = `ws${window.location.hostname == "localhost" ? "" : "s"}://${window.location.hostname}${window.location.hostname == "localhost" ? ":4000" : ""}/?auth_token=${token}&report_id=${report.id}`
             
             const ws = new WebSocket(url);
     
@@ -280,7 +280,8 @@ const ViewReportSheet = () => {
     
             ws.addEventListener('message', function (event) {
                 const msg = event.data;
-                console.log(msg, JSON.parse(msg));
+                console.log(msg);
+                console.log(JSON.parse(msg))
                 const report = JSON.parse(msg);
                 console.log("Websocket report : ",report_type, report);
                 downloadAndSetFileStateContents(report);
@@ -312,7 +313,9 @@ const ViewReportSheet = () => {
         <div className='sheet main'>
             <Space>
             <Segmented options={["Balance", "Payout Reconciliation"]} onChange={handleDomainChange} />
-            <RangePicker />
+            <RangePicker onChange={(moment_dates) => {
+                if(moment_dates.length == 2) setDates([moment_dates[0].unix(), moment_dates[1].unix()]);
+            }} />
             <Button icon={<AuditOutlined />} loading={current_page_status === "loading" } type='primary' onClick={makeReport} >Create Report</Button>
             </Space>
             <Divider />

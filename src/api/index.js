@@ -112,8 +112,6 @@ wss.on('connection', async function connection(ws, request, user_id, report_id) 
     ws.send(data);
 
   });
-  
-  ws.send('Connection successful.');
 });
 
 server.on('upgrade', async function upgrade(request, socket, head) {      //handling upgrade(http to websocekt) event

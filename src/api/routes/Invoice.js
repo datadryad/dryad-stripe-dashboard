@@ -38,7 +38,7 @@ router.post('/retrieve', authMiddleware, async (req, res) => {
     const user = req.user;
     
     if(!data.invoice_id) return res.formatter.badRequest("Missing Invoice ID.");
-    if(notPermitted(user, "view_invoice")) return res.formatter.unauthorized("You don't have the permission to view invoices.");
+    if(notPermitted(user, "general_permissions", "view_invoice")) return res.formatter.unauthorized("You don't have the permission to view invoices.");
 
     try {
         const invoice = await Stripe.invoices.retrieve(data.invoice_id);
@@ -59,7 +59,7 @@ router.post('/update/:action', authMiddleware, async (req, res) => {
 
     if(!action) return res.formatter.badRequest("Missing action.");
     if(!invoice_id) return res.formatter.badRequest("Missing invoice ID.");
-    if(notPermitted(user, "set_" + action)){
+    if(notPermitted(user, "invoice_permissions", "set_" + action)){
         let s = action;
         s = toTitleCase(action);
         s = s.replaceAll('_', ' '); 
@@ -139,7 +139,7 @@ router.post('/update/label/:action', authMiddleware, async (req, res) => {
 
     if(!action) return res.formatter.badRequest("Missing action.");
     if(!invoice_id) return res.formatter.badRequest("Missing invoice ID.");
-    if(notPermitted(user, "set_to_be_" + action)){
+    if(notPermitted(user, "invoice_permissions", "set_to_be_" + action)){
         let s = action;
         s = toTitleCase(action);
         s = s.replaceAll('_', ' '); 

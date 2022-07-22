@@ -18,9 +18,9 @@ router.post('/updates', express.raw({type: 'application/json'}), async (req, res
 
     try {
         event = stripe.webhooks.constructEvent(req.body, signature, endpointSecret);
-        // console.log(event.type);
+        console.log(event.type, event.data.object.id);
         if(event.type === "reporting.report_run.succeeded"){
-            await sendNotificationToAllActiveSessions("frr_1LNUiiKX6qdZziO2xUNkMkEx", event);
+            await sendNotificationToAllActiveSessions(event.data.object.id, event.data.object);
         }
     } catch (error) {
         console.log(error);

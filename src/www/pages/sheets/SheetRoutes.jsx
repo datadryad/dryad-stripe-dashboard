@@ -6,7 +6,7 @@ import Sider from 'antd/lib/layout/Sider';
 import { useAuthUser, useSignOut } from 'react-auth-kit';
 import { Link, Route, Routes, useNavigate } from "react-router-dom";
 import { MenuItem } from 'semantic-ui-react';
-import { ListInvoicesSheet, ListReportsSheet } from '.';
+import { ListInvoicesSheet, ListReportsSheet, ListUsersSheet } from '.';
 import Dashboard from './Dashboard';
 import ViewInvoiceSheet from './ViewInvoiceSheet';
 import ViewReportSheet from './ViewReportSheet';
@@ -104,6 +104,7 @@ export default () => {
                 <Route path="invoice/view/:invoice_id" element={<ViewInvoiceSheet/>} />
                 <Route path="report/list" element={<ListReportsSheet/>} />
                 <Route path="report/view/" element={<ViewReportSheet/>} />
+                <Route path="users/list" element={<ListUsersSheet/>} />
             </Routes>
             </Layout>
             </Layout>

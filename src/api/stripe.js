@@ -7,8 +7,9 @@ export const Stripe = StripeFactory('sk_test_fX9EovHjWMI7pR7saJuJ6Cka');
 // export const Stripe = StripeFactory('sk_test_51LIUymSIt9fpyvh6mswNEo5zCGruv8fBzLEm88rgrktfE9ZCfIz6W5AitmHbzm58hCCMs08CLEuKXo2b2aD2o2jo00MXP01MiL');
 
 export const handleError = (res, err) => {
-    // console.error(err);
-    return res.status(err.statusCode).json(err);
+    console.error(err);
+    if(err.statusCode) return res.status(err.statusCode).json(err);
+    return res.json(err);
 }
 
 export const setCustomStatus = async (invoice_id, status) => {
@@ -37,11 +38,13 @@ export const setTemporaryStatus = async (invoice_id, temporary_status) => {
     return invoice;
 };
 
-export const notPermitted = (user, permission) => {
-    if(!user.permissions.has(permission)) return true;
-    if(user.permissions.get(permission) === "false") return true;
+export const notPermitted = (user, permission_type, permission) => {
+    if(!user.permissions.has(permission_type)) return true;
+    const permissions = user.permissions.get(permission_type);
 
-    return false;
+    if(permissions.hasOwnProperty(permission_type) && ( permissions[permission_type][permission] !== "false" )) return false;
+
+    return true;
 }
 
 export const reportNotPermitted = (user, permission) => {

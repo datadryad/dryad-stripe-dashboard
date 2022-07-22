@@ -55,9 +55,13 @@ router.post('/create', authMiddleware, async (req, res) => {
         parameters : data.parameters
     }
 
-    const reportRun = await Stripe.reporting.reportRuns.create(options);
+    try {
+        const reportRun = await Stripe.reporting.reportRuns.create(options);
 
-    return res.formatter.ok(reportRun);
+        return res.formatter.ok(reportRun);
+    } catch (error) {
+        return handleError(res, error);
+    }
 })
 
 router.post('/retrieve', authMiddleware, async (req, res) => {
@@ -160,11 +164,11 @@ router.post('/dashboard/day', async (req, res) => {
 
     const data = req.body;
 
-    // const start = data.start
+    const start = data.start
     const end = data.end
 
     // previous month
-    let start = moment().subtract(2, "year").startOf("month").startOf("day").unix();
+    // let start = moment().subtract(2, "year").startOf("month").startOf("day").unix();
     // let end_date = moment().subtract(0, "month").endOf("month").endOf("day").unix();
     
     const aggr = await Invoice.aggregate([
@@ -203,12 +207,12 @@ router.post('/dashboard/custom', async (req, res) => {
 
     const data = req.body;
 
-    // const start = data.start
-    // const end = data.end
+    const start = data.start
+    const end = data.end
 
     // previous month
-    let start = moment().subtract(2, "year").startOf("month").startOf("day").unix();
-    let end = moment().subtract(0, "month").endOf("month").endOf("day").unix();
+    // let start = moment().subtract(2, "year").startOf("month").startOf("day").unix();
+    // let end = moment().subtract(0, "month").endOf("month").endOf("day").unix();
     
     const aggr = await Invoice.aggregate([
         {
@@ -246,12 +250,12 @@ router.post('/dashboard/week', async (req, res) => {
 
     const data = req.body;
 
-    // const start = data.start
-    // const end = data.end
+    const start = data.start
+    const end = data.end
 
     // previous month
-    let start = moment().subtract(2, "year").startOf("month").startOf("day").unix();
-    let end = moment().subtract(0, "month").endOf("month").endOf("day").unix();
+    // let start = moment().subtract(2, "year").startOf("month").startOf("day").unix();
+    // let end = moment().subtract(0, "month").endOf("month").endOf("day").unix();
     
     const aggr = await Invoice.aggregate([
         {
@@ -289,12 +293,12 @@ router.post('/dashboard/month', async (req, res) => {
 
     const data = req.body;
 
-    // const start = data.start
-    // const end = data.end
+    const start = data.start
+    const end = data.end
 
     // previous month
-    let start = moment().subtract(2, "year").startOf("month").startOf("day").unix();
-    let end = moment().subtract(0, "month").endOf("month").endOf("day").unix();
+    // let start = moment().subtract(2, "year").startOf("month").startOf("day").unix();
+    // let end = moment().subtract(0, "month").endOf("month").endOf("day").unix();
     
     const aggr = await Invoice.aggregate([
 
@@ -330,16 +334,58 @@ router.post('/dashboard/month', async (req, res) => {
 
 })
 
+router.post('/dashboard/amount', async (req, res) => {
+
+    const data = req.body;
+
+    const start = data.start
+    const end = data.end
+
+    // previous month
+    // let start = moment().subtract(2, "year").startOf("month").startOf("day").unix();
+    // let end = moment().subtract(0, "month").endOf("month").endOf("day").unix();
+    
+    const aggr = await Invoice.aggregate([
+
+        {
+            $match : {
+                created : {
+                    $gte : start,
+                    $lte : end
+                },
+                // status : "open"
+            }
+        },
+        {
+            $group : {
+                "_id": "$status",
+                total_amount : {
+                    $sum : "$amount_due"
+                },
+
+            }
+        },
+        {$sort: {_id: 1}}
+    
+    ]);
+
+    console.log(aggr);
+
+    return res.formatter.ok(aggr);
+    
+
+})
+
 router.post('/dashboard/year', async (req, res) => {
 
     const data = req.body;
 
-    // const start = data.start
-    // const end = data.end
+    const start = data.start
+    const end = data.end
 
     // previous month
-    let start = moment().subtract(1, "year").startOf("year").startOf("day").unix();
-    let end = moment().subtract(1, "year").endOf("year").endOf("day").unix();
+    // let start = moment().subtract(1, "year").startOf("year").startOf("day").unix();
+    // let end = moment().subtract(1, "year").endOf("year").endOf("day").unix();
     
     const aggr = await Invoice.aggregate([
 

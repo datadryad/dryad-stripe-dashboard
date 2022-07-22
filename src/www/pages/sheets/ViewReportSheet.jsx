@@ -3,15 +3,16 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { apiCall, getDateObject, reportVerbose } from '../../helpers';
 import "./styles/ViewInvoiceSheet.css"
 import "./styles/ViewReportSheet.css"
-import { Col, Divider, Tag, Row, Button, Table, Skeleton, Segmented, Space, DatePicker, Result, Select } from 'antd';
+import { Col, Divider, Tag, Row, Button, Table, Skeleton, Segmented, Space, DatePicker, Result, Select, notification } from 'antd';
 import { useAuthHeader, useIsAuthenticated } from 'react-auth-kit';
 import { AuditOutlined, BookOutlined, CloudDownloadOutlined, DownloadOutlined, LoadingOutlined, RollbackOutlined } from '@ant-design/icons';
+import moment from 'moment';
 
 const getSymbolFromCurrency = require('currency-symbol-map')
 const hdate = require("human-date");
+const commaNumber = require('comma-number')
 const { RangePicker } = DatePicker;
 const { Option } = Select;
-
 
 
 function toTitleCase(str) {
@@ -101,6 +102,17 @@ const ViewReportSheet = () => {
     const [ending_balance_reconciliation_summary_1_cols, set_ending_balance_reconciliation_summary_1_cols] = useState([]);
     const [ending_balance_reconciliation_itemized_4, set_ending_balance_reconciliation_itemized_4] = useState(false);
     const [ending_balance_reconciliation_itemized_4_cols, set_ending_balance_reconciliation_itemized_4_cols] = useState([]);
+
+
+    useEffect(() => {
+        let start = moment().subtract(1, "month").startOf("month").startOf("day").unix();
+        let end = moment().subtract(1, "month").endOf("month").endOf("day").unix();
+        setDates([start, end]);
+
+        makeReport();
+    }, [])
+    
+
 
 
     const fetchSetReportStateCols = (report_type) => {
@@ -200,7 +212,7 @@ const ViewReportSheet = () => {
     }
 
     const downloadAndSetFileStateContents = (report) => {
-        apiCall("/reports/file", {file_id : report.result.id}, (response) => {
+        apiCall("/reports/file", {file_id : report.result.id}, async (response) => {
             const data = response.data.data;
             const content = data.content;
             const link = data.link;
@@ -211,22 +223,68 @@ const ViewReportSheet = () => {
             content.forEach((row, index) => {
                 row.key = index
                 if(row.category){
-                    const str = row.category.replaceAll("_", " ");
-                    row.category = toTitleCase(str);
+                    let str = toTitleCase(row.category.replaceAll("_", " "));
+                    if(
+                        (
+                            ( row.category == "payouts_gross" || row.category == "payouts_fee"  ) ||
+                            ( row.category == "activity_gross" || row.category == "activity_fee"  ) 
+                        ) &&  
+                        report.report_type == "balance.summary.1"
+                    ) str = "\xa0\xa0\xa0\xa0" + str;
+                    row.category = str;
                 }
                 if(row.reporting_category){
-                    const str = row.reporting_category.replaceAll("_", " ");
-                    row.reporting_category = toTitleCase(str);
+                    let str = toTitleCase(row.reporting_category.replaceAll("_", " "));
+                    if(
+                        (
+                            ( row.category == "payouts_gross" || row.category == "payouts_fee"  ) ||
+                            ( row.category == "activity_gross" || row.category == "activity_fee"  ) 
+                        ) &&  
+                        report.report_type == "balance.summary.1"
+                    ) str = "\xa0\xa0\xa0\xa0" + str;
+                    row.category = str;
                 }
             });
 
-            const reportStateObject = { content, link, cols };
+            apiCall(
+                "/reports/dashboard/amount", 
+                {
+                    start : dates[0],
+                    end : dates[1],
+                },
+                (response) => {
+                    const invoice_report = response.data.data;
 
-            console.log(report.report_type, reportStateObject)
+                    const invoice_arr = [];
 
-            fetchSetReportStateCols(report.report_type)(cols);
-            fetchSetReportState(report.report_type)(reportStateObject);
-            setCurrent_page_status('ready');
+                    invoice_report.forEach(row => {
+                        
+                        invoice_arr.push([row._id, row.total_amount]);
+
+                    })
+                    if(report.report_type == "balance.summary.1"){
+                        const row = {
+                            category : "Invoice Amount Breakdown",
+                            description : "This shows a breakdown of the total amount gained from invoices.",
+                            net_amount : invoice_arr
+                        };
+
+                        content.push(row);
+                    }
+
+                    const reportStateObject = { content, link, cols };
+
+                    console.log(report.report_type, reportStateObject)
+
+                    fetchSetReportStateCols(report.report_type)(cols);
+                    fetchSetReportState(report.report_type)(reportStateObject);
+                    setCurrent_page_status('ready');
+                },
+                authHeader(),
+                null,
+                navigate
+            );
+            
     
         }, authHeader(), null, navigate);
     }
@@ -241,14 +299,64 @@ const ViewReportSheet = () => {
                 const curr = {
                     dataIndex : key,
                     key : key,
-                    value : key
+                    value : key,
                 };
                 let title = key.replaceAll('_', ' ');
                 curr.title = toTitleCase(title);
+                if(key == "net_amount"){
+                    curr.align = "center";
+                    curr.render = (arr) => {
+                        if(typeof arr === "string" || typeof arr === "number"){
+                            return (
+                                <span>$ {arr}</span>
+                            )
+                        }
+
+                        if(Array.isArray(arr)){                            
+                            let final = 0;
+
+                            let new_arr = [];
+                            console.log(arr);
+                            arr.forEach(row => {
+                                new_arr.push({
+                                    _id : row[0],
+                                    total_amount : row[1]
+                                })
+                                if(row[0] === "open" || row[0] === "paid") final += row[1];
+                                else final -= row[1];
+                            })
+
+                            new_arr.push({
+                                _id : "Total Amount",
+                                total_amount : final
+                            })
+
+                            const cols = [
+                                {
+                                    title : "Description",
+                                    dataIndex : "_id",
+                                    key : 1,
+                                    render : (_id) => toTitleCase(_id == "open" ? "paid" : _id)
+                                },
+                                {
+                                    title : "Amount",
+                                    dataIndex : "total_amount",
+                                    key : 2,
+                                    render : (amount) => '$ ' + commaNumber(amount)
+                                }
+                            ]
+
+                            return (
+                                <Table pagination={false} dataSource={new_arr} columns={cols} />
+                            )
+                        }
+                    }
+                }
+
                 columns.push(curr);
             }
         }
-    
+        console.log(columns);
         return columns;
     }
     
@@ -268,6 +376,7 @@ const ViewReportSheet = () => {
             (response) => {
             
             const report = response.data.data;
+            console.log(report_type, report);
             const ah = authHeader();
             const token = ah.split(" ")[1];
             const url = `ws${window.location.hostname == "localhost" ? "" : "s"}://${window.location.hostname}${window.location.hostname == "localhost" ? ":4000" : ""}/?auth_token=${token}&report_id=${report.id}`
@@ -280,8 +389,7 @@ const ViewReportSheet = () => {
     
             ws.addEventListener('message', function (event) {
                 const msg = event.data;
-                console.log(msg);
-                console.log(JSON.parse(msg))
+                // console.log(msg, );
                 const report = JSON.parse(msg);
                 console.log("Websocket report : ",report_type, report);
                 downloadAndSetFileStateContents(report);
@@ -295,19 +403,26 @@ const ViewReportSheet = () => {
         setDomain(option);
     }
     
-    const makeReport = () => {
+    const makeReport = async () => {
         setCurrent_page_status("loading");
 
-        // createReportAndAwaitCompletion("balance.summary.1");
+        if(dates.length != 2){
+            notification['error']({
+                message : "Validation Error",
+                description : "Please select start and end dates"
+            });
+            return;
+        }
 
         for (const i in categories[domain]) {
             if (Object.hasOwnProperty.call(categories[domain], i)) {
                 const report_type_desc = categories[domain][i];
-                console.log(report_type_desc)
+                console.log(report_type_desc);
                 createReportAndAwaitCompletion(report_type_desc);
             }
         }
     }
+
 
     return (
         <div className='sheet main'>
@@ -315,7 +430,7 @@ const ViewReportSheet = () => {
             <Segmented options={["Balance", "Payout Reconciliation"]} onChange={handleDomainChange} />
             <RangePicker onChange={(moment_dates) => {
                 if(moment_dates.length == 2) setDates([moment_dates[0].unix(), moment_dates[1].unix()]);
-            }} />
+            }} defaultValue={[ moment().subtract(1, "month").startOf("month").startOf("day"), moment().subtract(1, "month").endOf("month").endOf("day")]} />
             <Button icon={<AuditOutlined />} loading={current_page_status === "loading" } type='primary' onClick={makeReport} >Create Report</Button>
             </Space>
             <Divider />
@@ -377,8 +492,8 @@ const ViewReportSheet = () => {
                                 </Col>
                             </Row>
 
-                            <Table pagination={false} dataSource={balance_summary_1.content} >
-                                {balance_summary_1_cols && balance_summary_1_cols.map(col => <Option title={col.title} key={col.key} dataIndex={col.dataIndex} />)}
+                            <Table pagination={false} columns={balance_summary_1_cols} dataSource={balance_summary_1.content} >
+                                {/* {balance_summary_1_cols && balance_summary_1_cols.map(col => <Option title={col.title} key={col.key} dataIndex={col.dataIndex} />)} */}
                             </Table>
 
                             <Divider />

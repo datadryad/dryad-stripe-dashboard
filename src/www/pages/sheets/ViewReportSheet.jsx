@@ -259,12 +259,12 @@ const ViewReportSheet = () => {
 
                     invoice_report.forEach(row => {
                         
-                        invoice_arr.push([row._id, row.total_amount]);
+                        invoice_arr.push([row._id, row.total_amount/100]);
 
                     })
                     if(report.report_type == "balance.summary.1"){
                         const row = {
-                            category : "Invoice Amount Breakdown",
+                            category : "Gross Invoiced Value",
                             description : "This shows a breakdown of the total amount gained from invoices.",
                             net_amount : invoice_arr
                         };
@@ -322,12 +322,13 @@ const ViewReportSheet = () => {
                                     _id : row[0],
                                     total_amount : row[1]
                                 })
-                                if(row[0] === "open" || row[0] === "paid") final += row[1];
-                                else final -= row[1];
+                                // if(row[0] === "open" || row[0] === "paid") final += row[1];
+                                // else final -= row[1];
+                                final += row[1];
                             })
 
                             new_arr.push({
-                                _id : "Total Amount",
+                                _id : "Gross Invoiced Value",
                                 total_amount : final
                             })
 
@@ -336,7 +337,8 @@ const ViewReportSheet = () => {
                                     title : "Description",
                                     dataIndex : "_id",
                                     key : 1,
-                                    render : (_id) => toTitleCase(_id == "open" ? "paid" : _id)
+                                    // render : (_id) => toTitleCase(_id == "open" ? "paid" : _id)
+                                    render : (_id) => toTitleCase(_id)
                                 },
                                 {
                                     title : "Amount",

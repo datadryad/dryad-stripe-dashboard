@@ -338,12 +338,12 @@ router.post('/dashboard/amount', async (req, res) => {
 
     const data = req.body;
 
-    const start = data.start
-    const end = data.end
+    // const start = data.start
+    // const end = data.end
 
     // previous month
-    // let start = moment().subtract(2, "year").startOf("month").startOf("day").unix();
-    // let end = moment().subtract(0, "month").endOf("month").endOf("day").unix();
+    let start = moment().subtract(2, "year").startOf("month").startOf("day").unix();
+    let end = moment().subtract(0, "month").endOf("month").endOf("day").unix();
     
     const aggr = await Invoice.aggregate([
 
@@ -354,6 +354,36 @@ router.post('/dashboard/amount', async (req, res) => {
                     $lte : end
                 },
                 // status : "open"
+            }
+        },
+        {
+            $project : {
+                status : {
+                    $cond : {
+                        if : {
+                                $gte : [
+                                    {
+                                        $size : "$total_discount_amounts"
+                                    },
+                                    1
+                                ]
+                        },
+                        then : 'voucher',
+                        else : '$status'
+                    },
+                    $cond : {
+                        if : {
+                                $eq : [
+                                    "$status",
+                                    "void"
+                                ]
+                        },
+                        then : 'invoiced in error',
+                        else : '$status'
+                    }
+                    
+                },
+                amount_due : "$amount_due"
             }
         },
         {
@@ -369,7 +399,7 @@ router.post('/dashboard/amount', async (req, res) => {
     
     ]);
 
-    console.log(aggr);
+    // console.log(aggr);
 
     return res.formatter.ok(aggr);
     

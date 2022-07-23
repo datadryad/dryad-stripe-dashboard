@@ -27,7 +27,7 @@ index b4ea1f7..fcb1110 100644
  module.exports = mongoose.model("User", UserSchema);
 \ No newline at end of file
 diff --git a/node_modules/node-mongoose-auth/models/UserSchema.js b/node_modules/node-mongoose-auth/models/UserSchema.js
-index 77efdd6..9025494 100644
+index 77efdd6..7b7b572 100644
 --- a/node_modules/node-mongoose-auth/models/UserSchema.js
 +++ b/node_modules/node-mongoose-auth/models/UserSchema.js
 @@ -36,12 +36,12 @@ const UserSchema = mongoose.Schema(
@@ -54,30 +54,26 @@ index 77efdd6..9025494 100644
      },
      mobile: {
        type: String,
-@@ -101,6 +101,45 @@ const UserSchema = mongoose.Schema(
+@@ -101,6 +101,48 @@ const UserSchema = mongoose.Schema(
        type: Boolean,
        default: false,
      },
-+    permissions: {
-+      type : Map,
-+      of : mongoose.Schema.Types.Mixed,
-+      required : true,
++    report_permissions : {
++      type : mongoose.Schema.Types.Mixed,
 +      default : {
-+        //
-+        // View Invoice
-+        view_invoice : false,
-+        // Handle Reports
-+        access_reports : false,
-+        reports : {
-+          "balance_summary_1" : false,
-+          "balance_change_from_activity_summary_1" : false,
-+          "balance_change_from_activity_itemized_3" : false,
-+          "payouts_summary_1" : false,
-+          "payouts_itemized_3" : false,
-+          "payout_reconciliation_summary_1" : false,
-+          "payout_reconciliation_itemized_5" : false,
-+          "ending_balance_reconciliation_summary_1" : false,
-+        },
++        "balance_summary_1" : false,
++        "balance_change_from_activity_summary_1" : false,
++        "balance_change_from_activity_itemized_3" : false,
++        "payouts_summary_1" : false,
++        "payouts_itemized_3" : false,
++        "payout_reconciliation_summary_1" : false,
++        "payout_reconciliation_itemized_5" : false,
++        "ending_balance_reconciliation_summary_1" : false,
++      }
++    },
++    invoice_permissions : {
++      type : mongoose.Schema.Types.Mixed,
++      default : {
 +        // Handle refunds
 +        set_refund : false,
 +        set_to_be_refund : false,
@@ -96,12 +92,19 @@ index 77efdd6..9025494 100644
 +        set_to_be_refund : false,
 +        set_to_be_uncollectible : false,
 +      }
++    },
++    general_permissions : {
++      type : mongoose.Schema.Types.Mixed,
++      default : {
++        view_invoice : false,
++        access_reports : false,
++      }
 +    }
    },
    { timestamps: true }
  );
 diff --git a/node_modules/node-mongoose-auth/routes/users.js b/node_modules/node-mongoose-auth/routes/users.js
-index 999c7c3..606c60c 100644
+index 999c7c3..1112698 100644
 --- a/node_modules/node-mongoose-auth/routes/users.js
 +++ b/node_modules/node-mongoose-auth/routes/users.js
 @@ -1,13 +1,22 @@
@@ -136,7 +139,7 @@ index 999c7c3..606c60c 100644
      await auth.setPassword(user, password);
      await user.save();
  
-@@ -34,6 +45,7 @@ router.post("/register", async (req, res) => {
+@@ -34,15 +45,18 @@ router.post("/register", async (req, res) => {
  
  
  router.post("/login", async (req, res) => {
@@ -144,3 +147,62 @@ index 999c7c3..606c60c 100644
    const { email, password } = req.body;
    
    const user = await User.findOne({ email });
+ 
+-  if (!user) return res.status(400).json({ message: "No account matches this email" });
++  if (!user) return res.status(400).json({ message: "No account matches this email." });
+ 
+   const isAuthenticated = await auth.validatePassword(user, password);
+ 
+-  if (!isAuthenticated) return res.status(400).json({ message: "Invalid login credentials" });
++  if (!isAuthenticated) return res.status(400).json({ message: "Invalid login credentials." });
++
++  if(!user.isActive) return res.status(400).json({message : "Your account has been deactivated."})
+ 
+   // generate fresh token on login
+   const token = await auth.generateToken(user);
+@@ -53,4 +67,45 @@ router.get("/getuser", auth.authMiddleware, (req, res) => {
+   res.json(req.user);
+ });
+ 
++// router.post("/find", auth.adminMiddleware, (req, res) => {
++router.post("/find", (req, res) => {
++
++  const data = req.body;
++  const param = data.param;
++  const regex = new RegExp(param, 'i');
++
++  User.find().or([
++    {firstName : { $regex : regex }},
++    {lastName : { $regex : regex }},
++    {email : { $regex : regex }},
++  ]).limit(10).then(users => {
++    return res.json(users);
++  }).catch(error => {
++    return res.json(error);
++  })
++})
++
++router.post("/toggle", (req, res) => {
++  const data = req.body;
++  const user_id = data.user_id;
++  const status = data.status;
++
++  User.findOneAndUpdate(
++    {
++      _id : user_id
++    },
++    {
++      $set : {
++        isActive : status
++      }
++    },
++    {new : true},
++    (user, error) => {
++      console.log(user, error);
++      if(error) return res.json(error);
++      return res.json(user);
++    }
++  )
++})
++
+ module.exports = router;

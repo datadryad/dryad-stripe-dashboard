@@ -27,7 +27,7 @@ index b4ea1f7..fcb1110 100644
  module.exports = mongoose.model("User", UserSchema);
 \ No newline at end of file
 diff --git a/node_modules/node-mongoose-auth/models/UserSchema.js b/node_modules/node-mongoose-auth/models/UserSchema.js
-index 77efdd6..7b7b572 100644
+index 77efdd6..d882176 100644
 --- a/node_modules/node-mongoose-auth/models/UserSchema.js
 +++ b/node_modules/node-mongoose-auth/models/UserSchema.js
 @@ -36,12 +36,12 @@ const UserSchema = mongoose.Schema(
@@ -54,7 +54,7 @@ index 77efdd6..7b7b572 100644
      },
      mobile: {
        type: String,
-@@ -101,6 +101,48 @@ const UserSchema = mongoose.Schema(
+@@ -101,6 +101,49 @@ const UserSchema = mongoose.Schema(
        type: Boolean,
        default: false,
      },
@@ -98,6 +98,7 @@ index 77efdd6..7b7b572 100644
 +      default : {
 +        view_invoice : false,
 +        access_reports : false,
++        manage_users : false
 +      }
 +    }
    },

@@ -476,23 +476,23 @@ const ViewReportSheet = () => {
                 />
             }
 
-            {current_page_status === "loading" &&
+            {/* {current_page_status === "loading" &&
             
             <Result 
                 icon={<LoadingOutlined spin />}
                 title="Generating Report..."
             />
             
-            }
+            } */}
 
             {
                 domain === "Balance" && 
                 <>
 
-                    {balance_summary_1 && 
+                    <h2>Balance Summary</h2>
+                    <p>The Balance summary section shows your starting and ending Stripe balance for the selected date range, along with a high level summary of your activity during the period. Your balance includes funds that are available, pending, and any reserved funds, if applicable.</p>
+                    {balance_summary_1 ?
                         <>
-                            <h2>Balance Summary</h2>
-                            <p>The Balance summary section shows your starting and ending Stripe balance for the selected date range, along with a high level summary of your activity during the period. Your balance includes funds that are available, pending, and any reserved funds, if applicable.</p>
 
                             <Row style={{marginBottom : "0.8em"}} justify="space-between">
                                 <Col>
@@ -533,24 +533,25 @@ const ViewReportSheet = () => {
                             <Divider />
                             
                         </>
+
+                        : 
+
+                        <Skeleton active />
                     }
+                    <br></br>
+                    <h2>
+                        Balance change from activity - 
 
-                    {(balance_change_from_activity_summary_1 || balance_change_from_activity_itemized_3) && 
+                        <Select className='category-select' bordered={false} onChange={(val) => set_balance_change_from_activity_type(val)} value={balance_change_from_activity_type}>
+                            <Option value="summary">Summary</Option>
+                            <Option value="itemized">Itemized</Option>
+                        </Select>
+
+                    </h2>
+                    <p>The Balance change from activity section provides a more detailed breakdown of your transactions by reporting category. This section includes all transactions except for payouts that affect your balance, including charges, refunds, disputes, other adjustments, and fees.</p>
+                    
+                    {(balance_change_from_activity_summary_1 || balance_change_from_activity_itemized_3) ?
                         <>
-                            <h2>
-                                {/* Balance change from activity - {toTitleCase(balance_change_from_activity_type)} */}
-                                Balance change from activity - 
-
-                                <Select className='category-select' bordered={false} onChange={(val) => set_balance_change_from_activity_type(val)} value={balance_change_from_activity_type}>
-                                    <Option value="summary">Summary</Option>
-                                    <Option value="itemized">Itemized</Option>
-                                </Select>
-
-                            </h2>
-                            <p>The Balance change from activity section provides a more detailed breakdown of your transactions by reporting category. This section includes all transactions except for payouts that affect your balance, including charges, refunds, disputes, other adjustments, and fees.</p>
-
-
-
                             {
                                 balance_change_from_activity_type === "summary" ?
                                 <>
@@ -635,19 +636,26 @@ const ViewReportSheet = () => {
                             
                             <Divider />
                         </>
+
+                        :
+
+                        <Skeleton active />
                     }
-                    {(payouts_summary_1 || payouts_itemized_3) && 
+
+                    <br></br>
+                    <h2>    
+                        Payouts - 
+
+                        <Select className='category-select' bordered={false} onChange={(val) => set_payouts_type(val)} value={payouts_type}>
+                            <Option value="summary">Summary</Option>
+                            <Option value="itemized">Itemized</Option>
+                        </Select>
+
+                    </h2>
+                    <p>The Payouts section provides the quantity and total amount of payouts to your bank account during the period. You can download a list of individual payout transactions by clicking the Download button.</p>
+                    
+                    { (payouts_summary_1 || payouts_itemized_3) ?
                         <>
-                            <h2>    
-                                Payouts - 
-
-                                <Select className='category-select' bordered={false} onChange={(val) => set_payouts_type(val)} value={payouts_type}>
-                                    <Option value="summary">Summary</Option>
-                                    <Option value="itemized">Itemized</Option>
-                                </Select>
-
-                            </h2>
-                            <p>The Payouts section provides the quantity and total amount of payouts to your bank account during the period. You can download a list of individual payout transactions by clicking the Download button.</p>
 
 
 
@@ -735,6 +743,10 @@ const ViewReportSheet = () => {
                             
                             <Divider />
                         </>
+
+                        :
+
+                        <Skeleton active />
                     }
 
                 </>
@@ -744,11 +756,10 @@ const ViewReportSheet = () => {
                 domain == "Payout Reconciliation" &&
                 <>
 
-                    {balance_summary_1 && 
+                    <h2>Balance Summary</h2>
+                    <p>The Balance summary section shows your starting and ending Stripe balance for the selected date range, along with a high level summary of your activity during the period. Your balance includes funds that are available, pending, and any reserved funds, if applicable.</p>
+                    { balance_summary_1 ?
                         <>
-                            <h2>Balance Summary</h2>
-                            <p>The Balance summary section shows your starting and ending Stripe balance for the selected date range, along with a high level summary of your activity during the period. Your balance includes funds that are available, pending, and any reserved funds, if applicable.</p>
-
                             <Row style={{marginBottom : "0.8em"}} justify="space-between">
                                 <Col>
                                     <Select 
@@ -781,27 +792,31 @@ const ViewReportSheet = () => {
                                 </Col>
                             </Row>
 
-                            <Table pagination={false} dataSource={balance_summary_1.content} >
-                                {balance_summary_1_cols && balance_summary_1_cols.map(col => <Option title={col.title} key={col.key} dataIndex={col.dataIndex} />)}
+                            <Table pagination={false} columns={balance_summary_1_cols} dataSource={balance_summary_1.content} >
+                                {/* {balance_summary_1_cols && balance_summary_1_cols.map(col => <Option title={col.title} key={col.key} dataIndex={col.dataIndex} />)} */}
                             </Table>
 
                             <Divider />
                             
                         </>
+
+                        :
+
+                        <Skeleton active />
                     }
 
-                    {(payout_reconciliation_summary_1 || payout_reconciliation_itemized_5) && 
+                    <h2>
+                        Payout Reconciliation - 
+
+                        <Select className='category-select' bordered={false} onChange={(val) => set_payout_reconciliation_type(val)} value={balance_change_from_activity_type}>
+                            <Option value="summary">Summary</Option>
+                            <Option value="itemized">Itemized</Option>
+                        </Select>
+
+                    </h2>
+                    <p>The Payout reconciliation section provides a breakdown of the automatic payouts that were received in your bank account during the selected date range. The transactions included in those settlement batches are grouped by reporting category.</p>
+                    {(payout_reconciliation_summary_1 || payout_reconciliation_itemized_5) ?
                         <>
-                            <h2>
-                                Payout Reconciliation - 
-
-                                <Select className='category-select' bordered={false} onChange={(val) => set_payout_reconciliation_type(val)} value={balance_change_from_activity_type}>
-                                    <Option value="summary">Summary</Option>
-                                    <Option value="itemized">Itemized</Option>
-                                </Select>
-
-                            </h2>
-                            <p>The Payout reconciliation section provides a breakdown of the automatic payouts that were received in your bank account during the selected date range. The transactions included in those settlement batches are grouped by reporting category.</p>
 
 
 
@@ -889,19 +904,25 @@ const ViewReportSheet = () => {
                             
                             <Divider />
                         </>
+
+                        :
+
+                        <Skeleton active />
                     }
-                    {(ending_balance_reconciliation_summary_1 || ending_balance_reconciliation_itemized_4) && 
+
+                    <br></br>   
+                    <h2>    
+                        Ending Balance Reconciliation - 
+
+                        <Select className='category-select' bordered={false} onChange={(val) => set_ending_balance_reconciliation_type(val)} value={payouts_type}>
+                            <Option value="summary">Summary</Option>
+                            <Option value="itemized">Itemized</Option>
+                        </Select>
+
+                    </h2>
+                    <p>The Ending balance reconciliation section provides a similar breakdown of the transactions that hadn’t been settled as of the report’s end date.</p>
+                    {(ending_balance_reconciliation_summary_1 || ending_balance_reconciliation_itemized_4) ?
                         <>
-                            <h2>    
-                                Ending Balance Reconciliation - 
-
-                                <Select className='category-select' bordered={false} onChange={(val) => set_ending_balance_reconciliation_type(val)} value={payouts_type}>
-                                    <Option value="summary">Summary</Option>
-                                    <Option value="itemized">Itemized</Option>
-                                </Select>
-
-                            </h2>
-                            <p>The Ending balance reconciliation section provides a similar breakdown of the transactions that hadn’t been settled as of the report’s end date.</p>
 
 
 
@@ -988,6 +1009,10 @@ const ViewReportSheet = () => {
                             
                             <Divider />
                         </>
+
+                        :
+
+                        <Skeleton active />
                     }
 
                 </>

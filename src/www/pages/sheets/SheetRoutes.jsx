@@ -31,7 +31,7 @@ export default () => {
     const signOutFunction = useSignOut();
 
     const [collapsed, setCollapsed] = useState(true);
-    const [user, setUser] = useState({});
+    const [user, setUser] = useState(false);
 
 
     const signOut = () => {
@@ -45,8 +45,10 @@ export default () => {
 
     // Check user permissions and display Sidebar menu accordingly.
     useEffect(() => {
-        
-        setUser(auth_user());
+        const user = auth_user();
+        console.log(user);
+        setUser(user);
+
     }, [])
     
 
@@ -81,19 +83,23 @@ export default () => {
                             {!collapsed && "Access Invoices"}
                         </Link>
                     </Menu.Item>
-                    {(user.permissions && user.permissions.access_reports) || true && 
-                        <Menu.Item key={2}  icon={<BookOutlined className='sidebar-icon' />}>
-                            <Link to="/sheet/report/view">
-                                {!collapsed && "Check Reports"}
-                            </Link>
-                        </Menu.Item>
-                    }
-                    {user.isAdmin || true && 
-                        <Menu.Item key={3}  icon={<UserOutlined className='sidebar-icon' />}>
-                            <Link to="/sheet/users/list">
-                                {!collapsed && "Manage Users"}
-                            </Link>
-                        </Menu.Item>
+                    {user && 
+                        <>
+                            {(user.isAdmin || user.general_permissions.access_reports) && 
+                                <Menu.Item key={2}  icon={<BookOutlined className='sidebar-icon' />}>
+                                    <Link to="/sheet/report/view">
+                                        {!collapsed && "Check Reports"}
+                                    </Link>
+                                </Menu.Item>
+                            }
+                            {(user.isAdmin || user.general_permissions.manage_users) && 
+                                <Menu.Item key={3}  icon={<UserOutlined className='sidebar-icon' />}>
+                                    <Link to="/sheet/users/list">
+                                        {!collapsed && "Manage Users"}
+                                    </Link>
+                                </Menu.Item>
+                            }
+                        </>
                     }
                 </Menu>
             </Sider>

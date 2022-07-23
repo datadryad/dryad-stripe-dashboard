@@ -14,44 +14,6 @@ String.prototype.toProperCase = function () {
 
 const { Search } = Input;
 
-const normal_permissions = [
-    //
-    // View Invoice
-    {
-        key : "view_invoice",
-        title : "View Invoice"
-    },
-    // Handle refunds
-    "set_refund",
-    "set_to_be_refund",
-    // Set permanent statuses.
-    "set_paid",
-    "set_invoiced_in_error",
-    "set_waiver",
-    "set_voucher",
-    "set_refund",
-    "set_uncollectible",
-    // Set temporary statuses.
-    "set_to_be_paid",
-    "set_to_be_invoiced_in_error",
-    "set_to_be_waiver",
-    "set_to_be_voucher",
-    "set_to_be_refund",
-    "set_to_be_uncollectible",
-]
-
-const report_permissions = [
-    "balance_summary_1",
-    "balance_change_from_activity_summary_1",
-    "balance_change_from_activity_itemized_3",
-    "payouts_summary_1",
-    "payouts_itemized_3",
-    "payout_reconciliation_summary_1",
-    "payout_reconciliation_itemized_5",
-    "ending_balance_reconciliation_summary_1",
-    "ending_balance_reconciliation_itemized_4",
-]
-
 const isChecked = (selectedKeys, eventKey) => selectedKeys.includes(eventKey);
 
 const generateTree = (treeNodes = [], checkedKeys = []) =>
@@ -114,6 +76,7 @@ const TreeTransferComponent = ({user_id, current_permissions, permissions}) => {
 
     const [targetKeys, setTargetKeys] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [changed, setChanged] = useState(false);
     
     useEffect(() => {
         console.log(current_permissions);
@@ -124,6 +87,7 @@ const TreeTransferComponent = ({user_id, current_permissions, permissions}) => {
 
     const onChange = (keys) => {
         console.log(keys);
+        if(!changed) setChanged(true);
         setTargetKeys(keys);
     };
 
@@ -163,6 +127,7 @@ const TreeTransferComponent = ({user_id, current_permissions, permissions}) => {
             general_permissions : {
                 view_invoice : false,
                 access_reports : false,
+                manage_users : false
             }
         }
 
@@ -228,7 +193,7 @@ const TreeTransferComponent = ({user_id, current_permissions, permissions}) => {
             <TreeTransfer dataSource={permissions} targetKeys={targetKeys} onChange={onChange} />
             
             <div style={{display : "flex", justifyContent : 'flex-end', marginTop : "1em"}}>
-            <Button type="primary" icon={<SafetyOutlined />} onClick={setPermissions} loading={loading} >Set Permissions</Button>
+            <Button disabled={!changed} type="primary" icon={<SafetyOutlined />} onClick={setPermissions} loading={loading} >Set Permissions</Button>
             </div>
             {/* </Space> */}
         </>
@@ -258,6 +223,16 @@ const ListUsersSheet =  () => {
     const [loading, setLoading] = useState(false);
     const [param, setParam] = useState("");
 
+    
+    useEffect(() => {
+      apiCall("/users/list", {}, (response) => {
+        const users = response.data.data;
+
+        setUsers(users);
+      }, authHeader(), setLoading, navigate);
+    
+    }, [])
+    
 
 
     const fetchUsers = (param) => {
@@ -268,7 +243,7 @@ const ListUsersSheet =  () => {
             console.log(r)
             let users = r.data;
             
-            console.log(users);
+            console.log("USERSSS", users);
             setLoading(false);
             setUsers(users);
         }, authHeader(), setLoading, navigate)

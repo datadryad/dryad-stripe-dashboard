@@ -358,6 +358,22 @@ router.post('/dashboard/amount', async (req, res) => {
         },
         {
             $project : {
+                voucher_status : {
+                    $cond : {
+                        if : {
+                                $gte : [
+                                    {
+                                        $size : "$total_discount_amounts"
+                                    },
+                                    1
+                                ]
+                        },
+                        then : '$status',
+                        else : false
+                            
+                    }
+                    
+                },
                 status : {
                     $cond : {
                         if : {
@@ -382,21 +398,32 @@ router.post('/dashboard/amount', async (req, res) => {
                             }
                         }
                             
-                    },
-                    // $cond : {
-                        
-                    // }
+                    }
                     
                 },
-                amount_due : "$amount_due"
+                amount_due : "$amount_due",
+                voucher_discount : {
+                    $subtract : [
+                        "$subtotal_excluding_tax",
+                        "$total_excluding_tax"
+                    ]
+                }
             }
         },
         {
             $group : {
-                "_id": "$status",
+                "_id": {
+                    status : "$status",
+                    voucher_type : "$voucher_status",
+                    
+                },
                 total_amount : {
                     $sum : "$amount_due"
                 },
+                voucher_discount : {
+                    $sum : "$voucher_discount"
+                }
+                
 
             }
         },

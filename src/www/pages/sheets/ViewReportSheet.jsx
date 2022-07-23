@@ -257,14 +257,46 @@ const ViewReportSheet = () => {
 
                     const invoice_arr = [];
 
+                    const sums = {};
+
                     invoice_report.forEach(row => {
+
+                        const type = row._id.status;
+
+                        if(!sums[type]) sums[type] = { total_amount : 0};
+
                         
-                        invoice_arr.push([row._id, row.total_amount/100]);
+                        
+                        sums[type].type = type;
+
+                        const voucher_type = row._id.voucher_type;
+
+                        if(voucher_type){
+                            if(!sums[voucher_type]) sums[voucher_type] = { total_amount : 0};
+
+                            sums[voucher_type].total_amount += row.total_amount/100;
+                            sums[type].total_amount += row.voucher_discount/100;
+
+                        }
+                        else{
+                            sums[type].total_amount += row.total_amount/100;
+                        }
+                        
+                        // invoice_arr.push([row._id, row.total_amount/100]);
 
                     })
+
+                    for (const key in sums) {
+                        if (Object.hasOwnProperty.call(sums, key)) {
+                            const curr = sums[key];
+                            invoice_arr.push([curr.type, curr.total_amount]);
+                        }
+                    }
+                    // console.log(invoice_arr);
+
                     if(report.report_type == "balance.summary.1"){
                         const row = {
-                            category : "Gross Invoiced Value",
+                            category : "Invoice Details",
                             description : "This shows a breakdown of the total amount gained from invoices.",
                             net_amount : invoice_arr
                         };

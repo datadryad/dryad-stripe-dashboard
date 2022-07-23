@@ -39,8 +39,8 @@ export const setTemporaryStatus = async (invoice_id, temporary_status) => {
 };
 
 export const notPermitted = (user, permission_type, permission) => {
-    if(!user.permissions.has(permission_type)) return true;
-    const permissions = user.permissions.get(permission_type);
+
+    const permissions = user.get(permission_type);
 
     if(permissions.hasOwnProperty(permission_type) && ( permissions[permission_type][permission] !== "false" )) return false;
 

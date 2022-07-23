@@ -357,6 +357,41 @@ router.post('/dashboard/amount', async (req, res) => {
             }
         },
         {
+            $project : {
+                status : {
+                    $cond : {
+                        if : {
+                                $gte : [
+                                    {
+                                        $size : "$total_discount_amounts"
+                                    },
+                                    1
+                                ]
+                        },
+                        then : 'voucher',
+                        else : {
+                            $cond : {
+                                if : {
+                                    $eq : [
+                                        "$status",
+                                        "void"
+                                    ]
+                                },
+                                then : 'invoiced in error',
+                                else : '$status'
+                            }
+                        }
+                            
+                    },
+                    // $cond : {
+                        
+                    // }
+                    
+                },
+                amount_due : "$amount_due"
+            }
+        },
+        {
             $group : {
                 "_id": "$status",
                 total_amount : {
@@ -369,7 +404,7 @@ router.post('/dashboard/amount', async (req, res) => {
     
     ]);
 
-    console.log(aggr);
+    // console.log(aggr);
 
     return res.formatter.ok(aggr);
     

@@ -161,11 +161,13 @@ const ListInvoicesSheet =  () => {
         apiCall("/invoices/list", {}, (r) => {
     
             let invoices = r.data.data.data;
-            // console.log(Array.isArray(invoices))
+            
             invoices.forEach((row, index) => {
                 row.created_verbose = hdate.prettyPrint(getDateObject(row.created), { showTime : true });
                 row.key = index;
             })
+
+            console.log(invoices)
             setLoading(false);
             setInvoices(invoices);
         }, authHeader(), setLoading, navigate)
@@ -260,6 +262,10 @@ const ListInvoicesSheet =  () => {
                 {
                     text : 'Invoiced in error',
                     value : 'invoiced_in_error'
+                },
+                {
+                    text : 'Invoiced in error',
+                    value : 'void'
                 },
                 {
                     text : 'Waiver',

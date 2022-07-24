@@ -59,6 +59,7 @@ router.post('/update/:action', authMiddleware, async (req, res) => {
 
     if(!action) return res.formatter.badRequest("Missing action.");
     if(!invoice_id) return res.formatter.badRequest("Missing invoice ID.");
+    console.log(user.invoice_permissions["set_" + action]);
     if(notPermitted(user, "invoice_permissions", "set_" + action)){
         let s = action;
         s = toTitleCase(action);

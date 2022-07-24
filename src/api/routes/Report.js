@@ -338,12 +338,12 @@ router.post('/dashboard/amount', async (req, res) => {
 
     const data = req.body;
 
-    // const start = data.start
-    // const end = data.end
+    const start = data.start
+    const end = data.end
 
     // previous month
-    let start = moment().subtract(2, "year").startOf("month").startOf("day").unix();
-    let end = moment().subtract(0, "month").endOf("month").endOf("day").unix();
+    // let start = moment().subtract(2, "year").startOf("month").startOf("day").unix();
+    // let end = moment().subtract(0, "month").endOf("month").endOf("day").unix();
     
     const aggr = await Invoice.aggregate([
 

@@ -2,6 +2,7 @@ import { ConsoleSqlOutlined } from '@ant-design/icons';
 import express from 'express';
 import stripe from 'stripe';
 import WebSocket, { WebSocketServer } from 'ws';
+import Invoice from '../mongo/Invoice.js';
 import { sendNotificationToAllActiveSessions } from '../Websocket_utils.js';
 
 
@@ -18,7 +19,20 @@ router.post('/updates', express.raw({type: 'application/json'}), async (req, res
 
     try {
         event = stripe.webhooks.constructEvent(req.body, signature, endpointSecret);
-        console.log(event.type, event.data.object.id);
+        
+        if(event.type == "invoice.updated"){
+            console.log("Updating invoice : " + event.data.object.id)
+            Invoice.updateOne(
+                {_id : event.data.object.id},
+                event.data.object,
+                {
+                    new : true
+                },
+                (err, res) => {
+                    console.log(err, res);
+                }
+            )
+        }
         if(event.type === "reporting.report_run.succeeded"){
             await sendNotificationToAllActiveSessions(event.data.object.id, event.data.object);
         }

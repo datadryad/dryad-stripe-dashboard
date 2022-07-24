@@ -656,7 +656,7 @@ const Dashboard = () => {
             </Col>
             <Col span={6}>
                 <div className="statistic-card sheet">
-                    <h3>Last Yar</h3>
+                    <h3>Last Year</h3>
                     <div className="statistic-container" onMouseOver={() => carousel_ref.current.goTo(3)}>
                         <Row gutter={16} justify="space-between">
                             <Col>

@@ -338,7 +338,7 @@ const ListInvoicesSheet = () => {
             dataIndex: "status",
             key: "status",
             align: "center",
-            render: (status, invoice) => <StatusTag status={invoice.metadata.hasOwnProperty("custom_status") ? invoice.metadata.custom_status : status} />,
+            render: (status, invoice) => <StatusTag status={invoice.metadata.hasOwnProperty("custom_status") && status !== "void" ? invoice.metadata.custom_status : status} />,
             filters: [
                 {
                     text: 'Draft',

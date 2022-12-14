@@ -87,54 +87,75 @@ router.post('/update/:action', authMiddleware, async (req, res) => {
 
     try {
         let invoice = {};
-
-        switch (action) {
-            // case 'finalize':
+        if (action === "finalize") {
             //     invoice = await Stripe.invoices.finalizeInvoice(invoice_id);
-            //     break;
-        
-            case 'invoiced_in_error':
-                invoice  = await Stripe.invoices.voidInvoice(invoice_id);
-                invoice = setCustomStatus(invoice_id, "invoiced_in_error");
-                break;
-            
-            case 'paid':
-                invoice = await Stripe.invoices.pay(invoice_id);
-                invoice = setCustomStatus(invoice_id, "paid");
-
-                break;
-        
-            case 'uncollectible':
-                invoice = await Stripe.invoices.markUncollectible(invoice_id);
-                invoice = setCustomStatus(invoice_id, "uncollectible");
-
-                break;
-
-            case 'waiver':
-                invoice = setCustomStatus(invoice_id, "waiver");
-
-                break;
-
-            case 'voucher':
-                invoice = setCustomStatus(invoice_id, "voucher");
-
-                break;
-
-            case 'refund':
-                invoice = await Stripe.invoices.retrieve(invoice_id);
-                const charge = invoice.charge;
-                console.log(charge);
-                return;
-                let refund = await Stripe.refunds.create({ charge });
-
-                invoice = setCustomStatus(invoice_id, "refund");
-
-                break;
-        
-            default:
-                break;
+        } else if (action === "invoiced_in_error") {
+            invoice  = await Stripe.invoices.voidInvoice(invoice_id);
+            invoice = setCustomStatus(invoice_id, "invoiced_in_error");
+            return res.formatter.ok(invoice);
+        } else if (action === "paid") {
+            invoice = await Stripe.invoices.pay(invoice_id);
+            invoice = setCustomStatus(invoice_id, "paid");
+            return res.formatter.ok(invoice);
+        } else if (action === "uncollectible") {
+            invoice = await Stripe.invoices.markUncollectible(invoice_id);
+            invoice = setCustomStatus(invoice_id, "uncollectible");
+            return res.formatter.ok(invoice);
+        } else if (action === "waiver") {
+            invoice = await setCustomStatus(invoice_id, "waiver");
+            const waiver_amount = invoice.metadata.waiver_amount;
+            if (!waiver_amount) return res.formatter.badRequest("Waiver amount not set");
+            if (invoice.status === "open" || invoice.status === "uncollectible") {
+                Stripe.invoices.create({
+                    from_invoice: {
+                        action: "revision",
+                        invoice: invoice.id
+                    }
+                }).then(async newInvoice => {
+                    const waiverCoupon = await Stripe.coupons.create({
+                        amount_off: waiver_amount,
+                        currency: newInvoice.currency
+                    });
+                    newInvoice = await Stripe.invoices.update(newInvoice.id, {
+                        discounts: [
+                            {
+                                coupon: waiverCoupon.id
+                            }
+                        ]
+                    });
+                    invoice = await Stripe.invoices.finalizeInvoice(newInvoice.id)
+                    return res.formatter.ok(invoice);
+                }).catch(error => {
+                    return res.formatter.badRequest(error.message)
+                });
+            } else if (invoice.status === "draft") {
+                const waiverCoupon = await Stripe.coupons.create({
+                    amount_off: waiver_amount,
+                    currency: invoice.currency
+                });
+                invoice = await Stripe.invoices.update(invoice.id, {
+                    discounts: [
+                        {
+                            coupon: waiverCoupon.id
+                        }
+                    ]
+                });
+                return res.formatter.ok(invoice);
+            } else {
+                return res.formatter.badRequest("Cannot change status of this invoice");
+            }
+        } else if (action === "voucher") {
+            invoice = setCustomStatus(invoice_id, "voucher");
+        } else if (action === "refund") {
+            invoice = await Stripe.invoices.retrieve(invoice_id);
+            const charge = invoice.charge;
+            console.log(charge);
+            return res.formatter.ok(invoice);
+            let refund = await Stripe.refunds.create({ charge });
+            invoice = setCustomStatus(invoice_id, "refund");
+        } else {
+            return res.formatter.badRequest(new Error(`Unknown action ${action}`));
         }
-        return res.formatter.ok(invoice);
     } catch (err) {
         return handleError(res, err);
     }

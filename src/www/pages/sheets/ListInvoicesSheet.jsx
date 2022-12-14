@@ -21,10 +21,10 @@ const changeStatus = (new_status, invoice_id, auth_token, fetchInvoices, navigat
     }, auth_token, null, navigate);
 }
 
-const changeLabel = (new_status, invoice_id, auth_token, fetchInvoices, navigate, waiver_amount, voucher_amount) => {
+const changeLabel = (new_status, invoice_id, auth_token, fetchInvoices, navigate, waiver_amount, voucher_id) => {
     if (!waiver_amount) waiver_amount = 0;
-    if (!voucher_amount) voucher_amount = 0;
-    apiCall(`/invoices/update/label/${new_status}`, { invoice_id, waiver_amount, voucher_amount }, (response) => {
+    if (!voucher_id) voucher_id = null;
+    apiCall(`/invoices/update/label/${new_status}`, { invoice_id, waiver_amount, voucher_id }, (response) => {
         if (response.status == 200) fetchInvoices();
         else {
             ReportError(response);
@@ -164,7 +164,7 @@ const ListInvoicesSheet = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [selectedCoupan, setSelectedCoupan] = useState({});
     const [selectedModalType, setModalType] = useState('');
-    const [voucherAmount, setVoucherAmount] = useState(null);
+    const [waiverAmount, setWaiverAmount] = useState(null);
     let start, end
     const fetchCustomDateRangeData = () => {
         if (dates.length < 2) {
@@ -198,7 +198,7 @@ const ListInvoicesSheet = () => {
     }
 
     const fetchCoupans = () => {
-        apiCall('/invoices/all-coupans-list', {}, (r) => {
+        apiCall('/invoices/coupon-codes-all', {}, (r) => {
             let coupans = r.data.data.data;
             setCoupans(coupans)
             setIsLoading(false)
@@ -207,9 +207,9 @@ const ListInvoicesSheet = () => {
 
     const onChangeCoupans = (value) => {
         if (selectedModalType === 'Waiver') {
-            setSelectedCoupan(JSON.parse(value))
+            setWaiverAmount(value)
         } else {
-            setVoucherAmount(value)
+            setSelectedCoupan(JSON.parse(value))
         }
     }
     const showModal = (modalType, invoice) => {
@@ -222,14 +222,14 @@ const ListInvoicesSheet = () => {
     const handleOk = () => {
         if (selectedModalType === 'Waiver') {
             changeLabel("waiver", currentInvoice.id, authHeader(), fetchInvoices, navigate,
-                selectedCoupan.amount_off || currentInvoice.metadata.waiver_amount)
+                waiverAmount * 100 || currentInvoice.metadata.waiver_amount)
         } else {
             changeLabel("voucher", currentInvoice.id, authHeader(), fetchInvoices, navigate,
-                selectedCoupan.amount_off || currentInvoice.metadata.waiver_amount,
-                voucherAmount * 100 || currentInvoice.metadata.voucher_amount)
+                waiverAmount * 100 || currentInvoice.metadata.waiver_amount,
+                selectedCoupan.id)
         }
         setCoupans([])
-        setVoucherAmount(null)
+        setWaiverAmount(null)
         setIsModalVisible(false);
         fetchInvoices()
     };
@@ -237,7 +237,7 @@ const ListInvoicesSheet = () => {
     const handleCancel = () => {
         setSelectedCoupan({})
         setCoupans([])
-        setVoucherAmount(null)
+        setWaiverAmount(null)
         setIsModalVisible(false);
     };
 
@@ -408,7 +408,7 @@ const ListInvoicesSheet = () => {
     ]
 
     const getAmount = (invoice) => {
-        return `${getSymbolFromCurrency(invoice.currency)}${Math.floor((invoice.amount_due - (selectedCoupan.amount_off || 0)) / 100) - Math.floor(voucherAmount || 0)}`;
+        return `${getSymbolFromCurrency(invoice.currency)}${Math.floor((invoice.amount_due - (selectedCoupan.amount_off || 0)) / 100) - Math.floor(waiverAmount || 0)}`;
     }
 
     useEffect(() => {
@@ -418,7 +418,7 @@ const ListInvoicesSheet = () => {
         fetchInvoices();
 
     }, [])
-    const options = coupans ? coupans.map(item => <Option key={item.id} value={JSON.stringify(item)}>${Math.floor(item.amount_off / 100)}</Option>) : []
+    const options = coupans ? coupans.map(item => <Option key={item.id} value={JSON.stringify(item)}>{getSymbolFromCurrency(item.coupon.currency)}{Math.floor(item.coupon.amount_off / 100)} - {item.code}</Option>) : []
     return (
         <div className='sheet'>
             <Space />
@@ -433,28 +433,28 @@ const ListInvoicesSheet = () => {
                 visible={isModalVisible}
                 onOk={handleOk}
                 onCancel={handleCancel}
-                okButtonProps={{ disabled: !selectedCoupan.hasOwnProperty('amount_off') && !voucherAmount }}>
+                okButtonProps={{ disabled: !selectedCoupan.hasOwnProperty('id') && !waiverAmount }}>
                 <p>Offerting : {currentInvoice.account_name}</p>
                 <p>Email : {currentInvoice.customer_email}</p>
                 <p>Amount : {getAmount(currentInvoice)}</p>
                 <p>Created At : {currentInvoice.created_verbose}</p>
                 {selectedModalType.toLowerCase() === 'waiver' ?
                     <Space>
-                        <p>Coupans list :</p>
+                        <p>Waiver Amount :</p>
+                        <Input placeholder="Enter waiver amount"
+                            value={waiverAmount}
+                            onChange={(e) => onChangeCoupans(e.target.value)}
+                            prefix={getSymbolFromCurrency(currentInvoice.currency)} />
+                    </Space> :
+                    <Space>
+                        <p>Coupons list :</p>
                         <Select
-                            placeholder='Select Waiver Amount'
+                            placeholder='Select coupon'
                             onChange={onChangeCoupans}
                             loading={isLoading}
                         >
                             {options}
                         </Select>
-                    </Space> :
-                    <Space>
-                        <p>Voucher amount :</p>
-                        <Input placeholder="Enter voucher amount"
-                            value={voucherAmount}
-                            onChange={(e) => onChangeCoupans(e.target.value)}
-                            prefix={getSymbolFromCurrency(currentInvoice.currency)} />
                     </Space>
                 }
 

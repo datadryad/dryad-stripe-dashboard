@@ -12,6 +12,17 @@ import {
     setTemporaryStatus,
 } from '../stripe.js';
 
+router.post("/coupon-codes-all", async (req, res) => {
+    try {
+        const couponCodes = await Stripe.promotionCodes.list({
+            limit: 100
+        });
+        return res.formatter.ok(couponCodes);
+    } catch (error) {
+        res.formatter.serverError(error);
+    }
+});
+
 router.post('/list', async (req, res) => {
 
     const data = req.body;
@@ -28,9 +39,7 @@ router.post('/list', async (req, res) => {
     const invoices = await Stripe.invoices.list(options);
 
     return res.formatter.ok(invoices);
-    
-
-})
+});
 
 router.post('/retrieve', authMiddleware, async (req, res) => {
     const data = req.body;
@@ -157,7 +166,18 @@ router.post('/update/label/:action', authMiddleware, async (req, res) => {
     ].includes(action)) return res.formatter.badRequest("Invalid action attempted.");
 
     try {
-        const invoice = await setTemporaryStatus(invoice_id, action);
+        let invoice = null;
+        if (["waiver", "voucher"].includes(action)) {
+            invoice = await Stripe.invoices.update(invoice_id, {
+                metadata: {
+                    marked_status: action,
+                    voucher_id: data.voucher_id,
+                    waiver_amount: data.waiver_amount > 0 ? data.waiver_amount : null
+                }
+            });
+        } else {
+            invoice = await setTemporaryStatus(invoice_id, action);
+        }
         return res.formatter.ok(invoice);
     } catch (err) {
         return handleError(res, err);

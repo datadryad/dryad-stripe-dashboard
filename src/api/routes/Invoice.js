@@ -146,6 +146,43 @@ router.post('/update/:action', authMiddleware, async (req, res) => {
             }
         } else if (action === "voucher") {
             invoice = setCustomStatus(invoice_id, "voucher");
+            const voucher_id = invoice.metadata.voucher_id;
+            if (!voucher_id) return res.formatter.badRequest("Voucher not set");
+            const voucher = await Stripe.promotionCodes.retrieve(voucher_id);
+            if (!voucher) return res.formatter.badRequest("Voucher not present");
+            const coupon = await Stripe.coupons.retrieve(voucher.coupon.id);
+            if (!coupon) return res.formatter.badRequest("Voucher coupon not present");
+            if (invoice.status === "open" || invoice.status === "uncollectible") {
+                Stripe.invoices.create({
+                    from_invoice: {
+                        action: "revision",
+                        invoice: invoice.id
+                    }
+                }).then(async newInvoice => {
+                    newInvoice = await Stripe.invoices.update(newInvoice.id, {
+                        discounts: [
+                            {
+                                coupon: voucher.coupon.id
+                            }
+                        ]
+                    });
+                    invoice = await Stripe.invoices.finalizeInvoice(newInvoice.id)
+                    return res.formatter.ok(invoice);
+                }).catch(error => {
+                    return res.formatter.badRequest(error.message)
+                });
+            } else if (invoice.status === "draft") {
+                invoice = await Stripe.invoices.update(invoice.id, {
+                    discounts: [
+                        {
+                            coupon: voucher.coupon.id
+                        }
+                    ]
+                });
+                return res.formatter.ok(invoice);
+            } else {
+                return res.formatter.badRequest("Cannot change status of this invoice");
+            }
         } else if (action === "refund") {
             invoice = await Stripe.invoices.retrieve(invoice_id);
             const charge = invoice.charge;

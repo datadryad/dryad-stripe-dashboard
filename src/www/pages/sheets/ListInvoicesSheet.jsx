@@ -157,7 +157,7 @@ const ListInvoicesSheet = () => {
 
     const [invoices, setInvoices] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [dates, setDates] = useState([]);
+    const [dates, setDates] = useState([moment().subtract(1, "month").endOf("day"), moment().endOf("day")]);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [currentInvoice, setCurrentInvoice] = useState({});
     const [coupans, setCoupans] = useState([]);
@@ -181,7 +181,7 @@ const ListInvoicesSheet = () => {
 
     const fetchInvoices = () => {
         setLoading(true);
-        apiCall("/invoices/list", { created: { gte: start, lte: end } }, (r) => {
+        apiCall("/invoices/list", { created: { gte: dates[0].unix(), lte: dates[1].unix() } }, (r) => {
 
             let invoices = r.data.data.data;
 
@@ -412,8 +412,8 @@ const ListInvoicesSheet = () => {
     }
 
     useEffect(() => {
-        end = moment().startOf("day").unix();
-        start = moment().subtract(1, "month").endOf("day").unix();
+        end = moment().endOf("day");
+        start = moment().subtract(1, "month").endOf("day");
         setDates([start, end]);
         fetchInvoices();
 
@@ -425,7 +425,7 @@ const ListInvoicesSheet = () => {
             <Space>
                 <h2>Invoices </h2>
                 <RangePicker onCalendarChange={(dates) => { if (dates.length) setDates(dates) }}
-                    defaultValue={[moment().startOf("day"), moment().subtract(30, "days").endOf("day")]} />
+                    defaultValue={[moment().endOf("day"), moment().subtract(1, "month").endOf("day")]} />
                 <Button onClick={() => fetchCustomDateRangeData()} icon={<OrderedListOutlined />} shape="round" type="primary">Get Invoices</Button>
             </Space>
             <Table loading={loading} dataSource={invoices} columns={columns} onChange={onChange} />

@@ -145,7 +145,7 @@ router.post('/update/:action', authMiddleware, async (req, res) => {
                 return res.formatter.badRequest("Cannot change status of this invoice");
             }
         } else if (action === "voucher") {
-            invoice = setCustomStatus(invoice_id, "voucher");
+            invoice = await setCustomStatus(invoice_id, "voucher");
             const voucher_id = invoice.metadata.voucher_id;
             if (!voucher_id) return res.formatter.badRequest("Voucher not set");
             const voucher = await Stripe.promotionCodes.retrieve(voucher_id);

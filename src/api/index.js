@@ -16,6 +16,7 @@ import invoiceRoutes from "./routes/Invoice.js";
 
 import { responseEnhancer } from "express-response-formatter";
 import mongoose from "mongoose";
+import bluebird from "bluebird";
 import { authRouter } from "node-mongoose-auth";
 import { WebSocketServer } from "ws";
 import AuthRoutes from "./routes/Auth.js";
@@ -36,7 +37,8 @@ const MONGO_URI = `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process
 
 console.log(MONGO_URI);
 
-mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true }).then((r) => {
+mongoose.Promise = bluebird;
+mongoose.connect(MONGO_URI, { useMongoClient: true }).then((r) => {
   initiateRestore();
   console.log("MongoDB Connected");
   app.use("/auth", authRouter);

@@ -113,10 +113,9 @@ const Dashboard = () => {
     }
 
     const fetchLastWeek = () => {
-
-        let last_week = moment().subtract(1, "week");
-        let start = last_week.startOf("day").unix();
-        let end = last_week.endOf("day").unix();
+        const weekOfYear = moment().week();
+        const start = moment().week(weekOfYear - 1).startOf("week").unix();
+        const end = moment().week(weekOfYear - 1).endOf("week").unix();
     
         apiCall("/reports/dashboard/week", {start, end}, (response) => {
             const data = response.data.data;
@@ -148,10 +147,9 @@ const Dashboard = () => {
     }
 
     const fetchLastYear = () => {
-
-        let last_year = moment().subtract(1, "month");
-        let start = last_year.startOf("day").unix();
-        let end = last_year.endOf("day").unix();
+        const lastYear = moment().year() - 1;
+        const start = moment().year(lastYear).startOf("year").unix();
+        const end = moment().year(lastYear).endOf("year").unix();
     
         apiCall("/reports/dashboard/year", {start, end}, (response) => {
             const data = response.data.data;
@@ -183,12 +181,11 @@ const Dashboard = () => {
     }
 
     const fetchLastMonth = () => {
-
-        let last_month = moment().subtract(1, "month");
-        let start = last_month.startOf("day").unix();
-        let end = last_month.endOf("day").unix();
+        const lastMonth = moment().month() - 1;
+        const start = moment().month(lastMonth).startOf("month").unix();
+        const end = moment().month(lastMonth).endOf("month").unix();
     
-        apiCall("/reports/dashboard/week", {start, end}, (response) => {
+        apiCall("/reports/dashboard/month", {start, end}, (response) => {
             const data = response.data.data;
 
 

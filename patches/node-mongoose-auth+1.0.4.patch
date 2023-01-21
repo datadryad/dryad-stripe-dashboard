@@ -117,7 +117,7 @@ index 999c7c3..1112698 100644
  const router = express.Router();
  
 +const connectIfRequired = async () => {
-+  const MONGO_URI = `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@${process.env.MONGO_SERVICE_HOST}:${process.env.MONGO_SERVICE_PORT}/${process.env.MONGO_INITDB_DATABASE}?authSource=admin`
++  const MONGO_URI = process.env.MONGO_URI || `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@${process.env.MONGO_SERVICE_HOST}:${process.env.MONGO_SERVICE_PORT}/${process.env.MONGO_INITDB_DATABASE}?authSource=admin`
 +  if(mongoose.connection.readyState != 1) await mongoose.connect(MONGO_URI, {useNewUrlParser: true, useUnifiedTopology: true});
 +  return;
 +}

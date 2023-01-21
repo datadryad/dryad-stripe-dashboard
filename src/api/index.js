@@ -32,13 +32,14 @@ const app = express();
 const port = 4000;
 app.use(cors());
 
-const MONGO_URI = `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@${process.env.MONGO_SERVICE_HOST}:${process.env.MONGO_SERVICE_PORT}/${process.env.MONGO_INITDB_DATABASE}?authSource=admin`;
-// const MONGO_URI = "mongodb+srv://admin:admin@cluster0.loydr.mongodb.net/mongo?retryWrites=true&w=majority"
+// const MONGO_URL = `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@${process.env.MONGO_SERVICE_HOST}:${process.env.MONGO_SERVICE_PORT}/${process.env.MONGO_INITDB_DATABASE}?authSource=admin`;
+// const MONGO_URL = "mongodb+srv://admin:admin@cluster0.loydr.mongodb.net/mongo?retryWrites=true&w=majority"
+const { MONGO_URI } = process.env;
 
 console.log(MONGO_URI);
 
 mongoose.Promise = bluebird;
-mongoose.connect(MONGO_URI, { useMongoClient: true }).then((r) => {
+mongoose.connect(MONGO_URI, {  }).then((r) => {
   initiateRestore();
   console.log("MongoDB Connected");
   app.use("/auth", authRouter);

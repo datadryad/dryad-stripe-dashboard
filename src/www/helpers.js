@@ -6,12 +6,12 @@ import { useNavigate } from 'react-router-dom';
 import { useSignOut } from 'react-auth-kit';
 
 
-// export const API_URL = `${window.location.protocol}//${window.location.hostname}:${process.env.PORT || 3000}`;
+export const API_URL = `${window.location.protocol}//${window.location.hostname}:${process.env.PORT || 4000}`;
 
-let backend_api_url = `${window.location.protocol}//${window.location.hostname}`;
-if(window.location.hostname == "localhost") backend_api_url += ":4000";
+// let backend_api_url = `${window.location.protocol}//${window.location.hostname}`;
+// if(window.location.hostname == "localhost") backend_api_url += ":4000";
 
-export const API_URL = backend_api_url;
+// export const API_URL = 'http://31.220.17.80:4000';
 export const apiCall = (route, data, callback, token, loadingCallbackState, navigate) => {
     axios.post(API_URL + route, data, (token ? { headers : { Authorization : token } } : {})).then(callback).catch(error => {ReportError(error, navigate); if(loadingCallbackState) loadingCallbackState(false)});
 }

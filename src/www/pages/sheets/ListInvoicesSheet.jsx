@@ -83,6 +83,194 @@ const changeLabel = (
   );
 };
 
+const changeStatusMenu = (
+  menuKey,
+  invoice_id,
+  invoice,
+  auth_token,
+  fetchInvoices,
+  navigate
+) => {
+  const markedStatus = invoice.metadata.marked_status;
+  const allStatusChangeOptions = {
+    paid: {
+      key: `${menuKey}.1`,
+      label: (
+        <Button
+          block
+          onClick={() =>
+            changeStatus(
+              "paid",
+              invoice_id,
+              auth_token,
+              fetchInvoices,
+              navigate
+            )
+          }
+        >
+          Paid
+        </Button>
+      ),
+    },
+    invoiced_in_error: {
+      key: `${menuKey}.2`,
+      label: (
+        <Button
+          block
+          onClick={() =>
+            changeStatus(
+              "invoiced_in_error",
+              invoice_id,
+              auth_token,
+              fetchInvoices,
+              navigate
+            )
+          }
+        >
+          Invoiced in error
+        </Button>
+      ),
+    },
+    waiver: {
+      key: `${menuKey}.3`,
+      label: (
+        <Button
+          block
+          onClick={() =>
+            changeStatus(
+              "waiver",
+              invoice_id,
+              auth_token,
+              fetchInvoices,
+              navigate
+            )
+          }
+        >
+          Waiver
+        </Button>
+      ),
+    },
+    voucher: {
+      key: `${menuKey}.4`,
+      label: (
+        <Button
+          block
+          onClick={() =>
+            changeStatus(
+              "voucher",
+              invoice_id,
+              auth_token,
+              fetchInvoices,
+              navigate
+            )
+          }
+        >
+          Voucher
+        </Button>
+      ),
+    },
+    refund: {
+      key: `${menuKey}.5`,
+      label: (
+        <Button
+          block
+          onClick={() =>
+            changeStatus(
+              "refund",
+              invoice_id,
+              auth_token,
+              fetchInvoices,
+              navigate
+            )
+          }
+        >
+          Refund
+        </Button>
+      ),
+    },
+    uncollectible: {
+      key: `${menuKey}.6`,
+      label: (
+        <Button
+          block
+          onClick={() =>
+            changeStatus(
+              "uncollectible",
+              invoice_id,
+              auth_token,
+              fetchInvoices,
+              navigate
+            )
+          }
+        >
+          Uncollectible
+        </Button>
+      ),
+    },
+  };
+  const availableStatusChangeOptions = [];
+  if (!markedStatus) {
+  }
+
+  switch (markedStatus) {
+    case "paid":
+      availableStatusChangeOptions.push(allStatusChangeOptions.paid);
+      availableStatusChangeOptions.push(allStatusChangeOptions.refund);
+      break;
+    case "invoiced_in_error":
+      availableStatusChangeOptions.push(
+        allStatusChangeOptions.invoiced_in_error
+      );
+      availableStatusChangeOptions.push(allStatusChangeOptions.refund);
+      availableStatusChangeOptions.push(allStatusChangeOptions.uncollectible);
+      break;
+    case "waiver":
+      availableStatusChangeOptions.push(allStatusChangeOptions.waiver);
+      availableStatusChangeOptions.push(allStatusChangeOptions.uncollectible);
+      availableStatusChangeOptions.push(
+        allStatusChangeOptions.invoiced_in_error
+      );
+      availableStatusChangeOptions.push(allStatusChangeOptions.paid);
+      availableStatusChangeOptions.push(allStatusChangeOptions.refund);
+      break;
+    case "voucher":
+      availableStatusChangeOptions.push(allStatusChangeOptions.voucher);
+      availableStatusChangeOptions.push(allStatusChangeOptions.paid);
+      availableStatusChangeOptions.push(allStatusChangeOptions.refund);
+      availableStatusChangeOptions.push(allStatusChangeOptions.uncollectible);
+      availableStatusChangeOptions.push(
+        allStatusChangeOptions.invoiced_in_error
+      );
+      break;
+    case "refund":
+      availableStatusChangeOptions.push(allStatusChangeOptions.refund);
+      availableStatusChangeOptions.push(
+        allStatusChangeOptions.invoiced_in_error
+      );
+      availableStatusChangeOptions.push(allStatusChangeOptions.uncollectible);
+      break;
+    case "uncollectible":
+      availableStatusChangeOptions.push(
+        allStatusChangeOptions.invoiced_in_error
+      );
+      availableStatusChangeOptions.push(allStatusChangeOptions.uncollectible);
+      break;
+    default:
+      availableStatusChangeOptions.push(
+        ...Object.values(allStatusChangeOptions)
+      );
+      break;
+  }
+
+  const menu = {
+    key: menuKey,
+    label: "Change Status",
+    children: availableStatusChangeOptions,
+  };
+
+  return menu;
+};
+
 const actionsMenu = (
   invoice_id,
   invoice,
@@ -214,126 +402,14 @@ const actionsMenu = (
             },
           ],
         },
-        {
-          key: 3,
-          label: "Change Status",
-          children: [
-            {
-              key: "3.1",
-              label: (
-                <Button
-                  block
-                  onClick={() =>
-                    changeStatus(
-                      "paid",
-                      invoice_id,
-                      auth_token,
-                      fetchInvoices,
-                      navigate
-                    )
-                  }
-                >
-                  Paid
-                </Button>
-              ),
-            },
-            {
-              key: "3.2",
-              label: (
-                <Button
-                  block
-                  onClick={() =>
-                    changeStatus(
-                      "invoiced_in_error",
-                      invoice_id,
-                      auth_token,
-                      fetchInvoices,
-                      navigate
-                    )
-                  }
-                >
-                  Invoiced in error
-                </Button>
-              ),
-            },
-            {
-              key: "3.3",
-              label: (
-                <Button
-                  block
-                  onClick={() =>
-                    changeStatus(
-                      "waiver",
-                      invoice_id,
-                      auth_token,
-                      fetchInvoices,
-                      navigate
-                    )
-                  }
-                >
-                  Waiver
-                </Button>
-              ),
-            },
-            {
-              key: "3.4",
-              label: (
-                <Button
-                  block
-                  onClick={() =>
-                    changeStatus(
-                      "voucher",
-                      invoice_id,
-                      auth_token,
-                      fetchInvoices,
-                      navigate
-                    )
-                  }
-                >
-                  Voucher
-                </Button>
-              ),
-            },
-            {
-              key: "3.5",
-              label: (
-                <Button
-                  block
-                  onClick={() =>
-                    changeStatus(
-                      "refund",
-                      invoice_id,
-                      auth_token,
-                      fetchInvoices,
-                      navigate
-                    )
-                  }
-                >
-                  Refund
-                </Button>
-              ),
-            },
-            {
-              key: "3.6",
-              label: (
-                <Button
-                  block
-                  onClick={() =>
-                    changeStatus(
-                      "uncollectible",
-                      invoice_id,
-                      auth_token,
-                      fetchInvoices,
-                      navigate
-                    )
-                  }
-                >
-                  Uncollectible
-                </Button>
-              ),
-            },
-          ],
-        },
+        changeStatusMenu(
+          3,
+          invoice_id,
+          invoice,
+          auth_token,
+          fetchInvoices,
+          navigate
+        ),
         {
           key: 4,
           label: (

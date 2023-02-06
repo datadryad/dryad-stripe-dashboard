@@ -41,13 +41,26 @@ router.post("/list", async (req, res) => {
     created,
     due_date,
     ending_before,
-    limit: limit || 10,
+    limit: limit || 100,
     starting_after,
   };
 
   let invoices = null;
+  let customerId = null;
+  let isSearch =
+    customer_email_filter || marked_status_filter || set_status_filter;
 
-  if (customer_email_filter || marked_status_filter || set_status_filter) {
+  console.log(`isSearch: ${isSearch}`)
+
+  if (customer_email_filter) {
+    const customerSearchResult = await Stripe.customers.search({
+      query: `email:"${customer_email_filter}"`,
+      limit: 1,
+    });
+    customerId = customerSearchResult?.data?.[0]?.id;
+  }
+
+  if (isSearch) {
     let query = `created>=${created.gte} created<=${created.lte} ${
       marked_status_filter
         ? `metadata["marked_status"]:"${marked_status_filter}"`
@@ -56,7 +69,7 @@ router.post("/list", async (req, res) => {
       set_status_filter
         ? `metadata["custom_status"]:"${set_status_filter}"`
         : ""
-    }`;
+    } ${customerId ? `customer:"${customerId}"` : ""}`;
     invoices = await Stripe.invoices.search({ query });
   } else {
     invoices = await Stripe.invoices.list(options);

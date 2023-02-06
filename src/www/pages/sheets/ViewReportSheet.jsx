@@ -68,7 +68,11 @@ const ViewReportSheet = () => {
     const navigate = useNavigate();
 
     
-    const [dates, setDates] = useState([1642662478, 1658128249]);
+    const [lastMonth, setLastMonth] = useState(moment().month() - 1);
+    const [dates, setDates] = useState([
+        moment().month(lastMonth).startOf("month").unix(), 
+        moment().month(lastMonth).endOf("month").unix()
+    ]);
     const [cols, setCols] = useState([]);
 
     const [domain, setDomain] = useState("Balance");
@@ -105,10 +109,9 @@ const ViewReportSheet = () => {
 
 
     useEffect(() => {
-        let start = moment().subtract(1, "month").startOf("month").startOf("day").unix();
-        let end = moment().subtract(1, "month").endOf("month").endOf("day").unix();
-        setDates([start, end]);
-
+        // let start = moment().subtract(1, "month").startOf("month").startOf("day").unix();
+        // let end = moment().subtract(1, "month").endOf("month").endOf("day").unix();
+        // setDates([start, end]);
         makeReport();
     }, [])
     
@@ -413,7 +416,7 @@ const ViewReportSheet = () => {
             console.log(report_type, report);
             const ah = authHeader();
             const token = ah.split(" ")[1];
-            const url = `ws${window.location.hostname == "localhost" ? "" : "s"}://${window.location.hostname}${window.location.hostname == "localhost" ? ":4000" : ""}/?auth_token=${token}&report_id=${report.id}`
+            const url = `ws://${window.location.hostname}:4000/?auth_token=${token}&report_id=${report.id}`
             
             const ws = new WebSocket(url);
     

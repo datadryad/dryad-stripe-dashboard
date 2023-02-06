@@ -14918,10 +14918,10 @@
   "resolved" "https://registry.npmjs.org/strip-json-comments/-/strip-json-comments-2.0.1.tgz"
   "version" "2.0.1"
 
-"stripe@^11.3.0":
-  "integrity" "sha512-/ZVM1dmwrSZzNvN0vIixqhN79fgW2l3qBjw57bnFr5EQcRJTQkuJw6iEgb/EKg/40i2K/lWoa4gwnQkekC326Q=="
-  "resolved" "https://registry.npmjs.org/stripe/-/stripe-11.3.0.tgz"
-  "version" "11.3.0"
+"stripe@^11.8.0":
+  "integrity" "sha512-aGwrJDqYzpjQj0ejt7oN7BE7kUjZFxhUz/gDeyDCS7CBpZhDb26Eb6z9sS8KdbsbmuS8rkkn2lBY4koK7L1ZCw=="
+  "resolved" "https://registry.npmjs.org/stripe/-/stripe-11.8.0.tgz"
+  "version" "11.8.0"
   dependencies:
     "@types/node" ">=8.1.0"
     "qs" "^6.11.0"

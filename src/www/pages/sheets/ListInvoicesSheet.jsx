@@ -841,6 +841,7 @@ const ListInvoicesSheet = () => {
           placeholder="Email"
           value={customerEmailFilter}
           onChange={(e) => setCustomerEmailFilter(e.target.value)}
+          allowClear="true"
         />
 
         <Select

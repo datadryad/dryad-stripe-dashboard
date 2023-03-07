@@ -50,8 +50,6 @@ router.post("/list", async (req, res) => {
   let isSearch =
     customer_email_filter || marked_status_filter || set_status_filter;
 
-  console.log(`isSearch: ${isSearch}`)
-
   if (customer_email_filter) {
     const customerSearchResult = await Stripe.customers.search({
       query: `email:"${customer_email_filter}"`,
@@ -60,17 +58,33 @@ router.post("/list", async (req, res) => {
     customerId = customerSearchResult?.data?.[0]?.id;
   }
 
+  const isStatusClientSideSearch =
+    set_status_filter === "paid" ||
+    set_status_filter === "open" ||
+    set_status_filter === "uncollectible";
+
   if (isSearch) {
     let query = `created>=${created.gte} created<=${created.lte} ${
       marked_status_filter
         ? `metadata["marked_status"]:"${marked_status_filter}"`
         : ""
-    } ${
-      set_status_filter
-        ? `metadata["custom_status"]:"${set_status_filter}"`
-        : ""
     } ${customerId ? `customer:"${customerId}"` : ""}`;
-    invoices = await Stripe.invoices.search({ query });
+    if (!isStatusClientSideSearch) {
+      console.log("Not client side search");
+      query = `${query} ${
+        set_status_filter
+          ? `metadata["custom_status"]:"${set_status_filter}"`
+          : ""
+      }`;
+    }
+    invoices = await Stripe.invoices.search({ query, limit: 100 });
+    console.log(`search result contains ${invoices.data.length} invoices`);
+    if (isStatusClientSideSearch) {
+      console.log("Client side search");
+      invoices.data = invoices.data.filter(
+        (invoice) => invoice.status === set_status_filter
+      );
+    }
   } else {
     invoices = await Stripe.invoices.list(options);
   }

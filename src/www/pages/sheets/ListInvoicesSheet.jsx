@@ -125,12 +125,59 @@ const createChangeStatusMenuItem = (
   };
 };
 
+const createMarkStatusMenuItem = (
+  menuKey,
+  status,
+  invoice_id,
+  invoice,
+  auth_token,
+  fetchInvoices,
+  modalFunction,
+  navigate
+) => {
+  const statuses = [
+    "paid",
+    "invoiced_in_error",
+    "waiver",
+    "voucher",
+    "refund",
+    "uncollectible",
+  ];
+  if (status === "waiver" || status === "voucher") {
+    return {
+      key: `${menuKey}.${statuses.indexOf(status) + 1}`,
+      label: (
+        <Button
+          block
+          onClick={() => modalFunction(statusLabels[status], invoice)}
+        >
+          {statusLabels[status]}
+        </Button>
+      ),
+    };
+  }
+  return {
+    key: `${menuKey}.${statuses.indexOf(status) + 1}`,
+    label: (
+      <Button
+        block
+        onClick={() =>
+          changeLabel(status, invoice_id, auth_token, fetchInvoices, navigate)
+        }
+      >
+        {statusLabels[status]}
+      </Button>
+    ),
+  };
+};
+
 const markStatusMenu = (
   menuKey,
   invoice_id,
   invoice,
   auth_token,
   fetchInvoices,
+  modalFunction,
   navigate
 ) => {
   const status = invoice.status;
@@ -146,27 +193,44 @@ const markStatusMenu = (
   switch (status) {
     case "draft":
       menu.children.push(
-        createChangeStatusMenuItem(
-          menuKey,
-          "waiver",
-          invoice_id,
-          auth_token,
-          fetchInvoices,
-          navigate
+        ...["invoiced_in_error", "waiver", "voucher"].map((availableStatus) =>
+          createMarkStatusMenuItem(
+            menuKey,
+            availableStatus,
+            invoice_id,
+            invoice,
+            auth_token,
+            fetchInvoices,
+            modalFunction,
+            navigate
+          )
         )
       );
       break;
     case "open":
       menu.children.push(
-        createChangeStatusMenuItem(
-          menuKey,
+        ...[
+          "invoiced_in_error",
+          "waiver",
           "voucher",
-          invoice_id,
-          auth_token,
-          fetchInvoices,
-          navigate
+          "uncollectible",
+        ].map((availableStatus) =>
+          createMarkStatusMenuItem(
+            menuKey,
+            availableStatus,
+            invoice_id,
+            invoice,
+            auth_token,
+            fetchInvoices,
+            modalFunction,
+            navigate
+          )
         )
       );
+      break;
+    case "void":
+      break;
+    case "uncollectible":
       break;
     case "paid":
       break;
@@ -466,7 +530,7 @@ const changeStatusMenu = (
       break;
   }
 
-  menu.children= availableStatusChangeOptions;
+  menu.children = availableStatusChangeOptions;
   return menu;
 };
 
@@ -497,6 +561,7 @@ const actionsMenu = (
           invoice,
           auth_token,
           fetchInvoices,
+          modalFunction,
           navigate
         ),
         changeStatusMenu(

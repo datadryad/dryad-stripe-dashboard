@@ -94,6 +94,41 @@ const statusLabels = {
   open: "Open",
 };
 
+const statusFilters = [
+  {
+    text: "Draft",
+    value: "draft",
+  },
+  {
+    text: "Invoiced in error",
+    value: "invoiced_in_error",
+  },
+  {
+    text: "Waiver",
+    value: "waiver",
+  },
+  {
+    text: "Voucher",
+    value: "voucher",
+  },
+  {
+    text: "Refund",
+    value: "refund",
+  },
+  {
+    text: "Uncollectible",
+    value: "uncollectible",
+  },
+  {
+    text: "Open",
+    value: "open",
+  },
+  {
+    text: "Paid",
+    value: "paid",
+  },
+];
+
 const createChangeStatusMenuItem = (
   menuKey,
   status,
@@ -182,8 +217,8 @@ const markStatusMenu = (
 ) => {
   const status = invoice.status;
   const markedStatus = invoice.metadata.marked_status;
+  const setStatus = invoice.metadata.custom_status;
   const availableMarkOptions = [];
-
   const menu = {
     key: menuKey,
     label: "Mark Invoice",
@@ -210,6 +245,7 @@ const markStatusMenu = (
     case "open":
       menu.children.push(
         ...[
+          "paid",
           "invoiced_in_error",
           "waiver",
           "voucher",
@@ -233,11 +269,36 @@ const markStatusMenu = (
     case "uncollectible":
       break;
     case "paid":
+      menu.children.push(
+        ...[
+          "refund",
+          "uncollectible",
+          "invoiced_in_error",
+        ].map((availableStatus) =>
+          createMarkStatusMenuItem(
+            menuKey,
+            availableStatus,
+            invoice_id,
+            invoice,
+            auth_token,
+            fetchInvoices,
+            modalFunction,
+            navigate
+          )
+        )
+      );
       break;
     default:
       break;
   }
 
+  if (
+    menu.children.length < 1 ||
+    ["invoiced_in_error", "uncollectible", "refund"].includes(setStatus)
+  ) {
+    menu.disabled = true;
+    menu.label = "Cannot mark this invoice";
+  }
   return menu;
 };
 
@@ -250,287 +311,94 @@ const changeStatusMenu = (
   navigate
 ) => {
   const markedStatus = invoice.metadata.marked_status;
-  const availableStatusChangeOptions = [];
+  const setStatus = invoice.metadata.custom_status;
+  const status = invoice.status;
   const menu = {
     key: menuKey,
     label: "Change Status",
     children: [],
   };
 
-  if (!markedStatus) {
-    return menu;
-  }
-
-  switch (markedStatus) {
+  switch (status) {
+    case "draft":
+      menu.children.push(
+        ...["invoiced_in_error", "waiver", "voucher"].map((s) =>
+          createChangeStatusMenuItem(
+            menuKey,
+            s,
+            invoice_id,
+            auth_token,
+            fetchInvoices,
+            navigate
+          )
+        )
+      );
+      break;
     case "paid":
-      availableStatusChangeOptions.push(
-        createChangeStatusMenuItem(
-          menuKey,
-          "paid",
-          invoice_id,
-          auth_token,
-          fetchInvoices,
-          navigate
-        )
-      );
-      availableStatusChangeOptions.push(
-        createChangeStatusMenuItem(
-          menuKey,
-          "refund",
-          invoice_id,
-          auth_token,
-          fetchInvoices,
-          navigate
-        )
-      );
-      break;
-    case "invoiced_in_error":
-      availableStatusChangeOptions.push(
-        createChangeStatusMenuItem(
-          menuKey,
-          "invoiced_in_error",
-          invoice_id,
-          auth_token,
-          fetchInvoices,
-          navigate
-        )
-      );
-      availableStatusChangeOptions.push(
-        createChangeStatusMenuItem(
-          menuKey,
-          "refund",
-          invoice_id,
-          auth_token,
-          fetchInvoices,
-          navigate
-        )
-      );
-      availableStatusChangeOptions.push(
-        createChangeStatusMenuItem(
-          menuKey,
-          "uncollectible",
-          invoice_id,
-          auth_token,
-          fetchInvoices,
-          navigate
-        )
-      );
-      break;
-    case "waiver":
-      availableStatusChangeOptions.push(
-        createChangeStatusMenuItem(
-          menuKey,
-          "waiver",
-          invoice_id,
-          auth_token,
-          fetchInvoices,
-          navigate
-        )
-      );
-      availableStatusChangeOptions.push(
-        createChangeStatusMenuItem(
-          menuKey,
-          "uncollectible",
-          invoice_id,
-          auth_token,
-          fetchInvoices,
-          navigate
-        )
-      );
-      availableStatusChangeOptions.push(
-        createChangeStatusMenuItem(
-          menuKey,
-          "invoiced_in_error",
-          invoice_id,
-          auth_token,
-          fetchInvoices,
-          navigate
-        )
-      );
-      availableStatusChangeOptions.push(
-        createChangeStatusMenuItem(
-          menuKey,
-          "paid",
-          invoice_id,
-          auth_token,
-          fetchInvoices,
-          navigate
-        )
-      );
-      availableStatusChangeOptions.push(
-        createChangeStatusMenuItem(
-          menuKey,
-          "refund",
-          invoice_id,
-          auth_token,
-          fetchInvoices,
-          navigate
-        )
-      );
-      break;
-    case "voucher":
-      availableStatusChangeOptions.push(
-        createChangeStatusMenuItem(
-          menuKey,
-          "voucher",
-          invoice_id,
-          auth_token,
-          fetchInvoices,
-          navigate
-        )
-      );
-      availableStatusChangeOptions.push(
-        createChangeStatusMenuItem(
-          menuKey,
-          "paid",
-          invoice_id,
-          auth_token,
-          fetchInvoices,
-          navigate
-        )
-      );
-      availableStatusChangeOptions.push(
-        createChangeStatusMenuItem(
-          menuKey,
-          "refund",
-          invoice_id,
-          auth_token,
-          fetchInvoices,
-          navigate
-        )
-      );
-      availableStatusChangeOptions.push(
-        createChangeStatusMenuItem(
-          menuKey,
-          "uncollectible",
-          invoice_id,
-          auth_token,
-          fetchInvoices,
-          navigate
-        )
-      );
-      availableStatusChangeOptions.push(
-        createChangeStatusMenuItem(
-          menuKey,
-          "invoiced_in_error",
-          invoice_id,
-          auth_token,
-          fetchInvoices,
-          navigate
-        )
-      );
-      break;
-    case "refund":
-      availableStatusChangeOptions.push(
-        createChangeStatusMenuItem(
-          menuKey,
-          "refund",
-          invoice_id,
-          auth_token,
-          fetchInvoices,
-          navigate
-        )
-      );
-      availableStatusChangeOptions.push(
-        createChangeStatusMenuItem(
-          menuKey,
-          "invoiced_in_error",
-          invoice_id,
-          auth_token,
-          fetchInvoices,
-          navigate
-        )
-      );
-      availableStatusChangeOptions.push(
-        createChangeStatusMenuItem(
-          menuKey,
-          "uncollectible",
-          invoice_id,
-          auth_token,
-          fetchInvoices,
-          navigate
+      menu.children.push(
+        ...["refund"].map((availableStatus) =>
+          createChangeStatusMenuItem(
+            menuKey,
+            availableStatus,
+            invoice_id,
+            auth_token,
+            fetchInvoices,
+            navigate
+          )
         )
       );
       break;
     case "uncollectible":
-      availableStatusChangeOptions.push(
-        createChangeStatusMenuItem(
-          menuKey,
+      break;
+    case "void":
+      break;
+    case "open":
+      menu.children.push(
+        ...[
+          "paid",
+          "waiver",
+          "voucher",
           "invoiced_in_error",
-          invoice_id,
-          auth_token,
-          fetchInvoices,
-          navigate
-        )
-      );
-      availableStatusChangeOptions.push(
-        createChangeStatusMenuItem(
-          menuKey,
           "uncollectible",
-          invoice_id,
-          auth_token,
-          fetchInvoices,
-          navigate
+        ].map((availableStatus) =>
+          createChangeStatusMenuItem(
+            menuKey,
+            availableStatus,
+            invoice_id,
+            auth_token,
+            fetchInvoices,
+            navigate
+          )
         )
       );
       break;
     default:
-      availableStatusChangeOptions.push(
-        ...[
-          createChangeStatusMenuItem(
-            menuKey,
-            "paid",
-            invoice_id,
-            auth_token,
-            fetchInvoices,
-            navigate
-          ),
-          createChangeStatusMenuItem(
-            menuKey,
-            "invoiced_in_error",
-            invoice_id,
-            auth_token,
-            fetchInvoices,
-            navigate
-          ),
-          createChangeStatusMenuItem(
-            menuKey,
-            "waiver",
-            invoice_id,
-            auth_token,
-            fetchInvoices,
-            navigate
-          ),
-          createChangeStatusMenuItem(
-            menuKey,
-            "voucher",
-            invoice_id,
-            auth_token,
-            fetchInvoices,
-            navigate
-          ),
-          createChangeStatusMenuItem(
-            menuKey,
-            "refund",
-            invoice_id,
-            auth_token,
-            fetchInvoices,
-            navigate
-          ),
-          createChangeStatusMenuItem(
-            menuKey,
-            "uncollectible",
-            invoice_id,
-            auth_token,
-            fetchInvoices,
-            navigate
-          ),
-        ]
-      );
       break;
   }
 
-  menu.children = availableStatusChangeOptions;
+  if (setStatus === "refund" && status === "paid") {
+    menu.children = [
+      "uncollectible",
+      "invoiced_in_error",
+    ].map((availableStatus) =>
+      createChangeStatusMenuItem(
+        menuKey,
+        availableStatus,
+        invoice_id,
+        auth_token,
+        fetchInvoices,
+        navigate
+      )
+    );
+  }
+
+  if (
+    menu.children.length < 1 ||
+    ["uncollectible", "invoiced_in_error"].includes(setStatus)
+  ) {
+    menu.disabled = true;
+    menu.label = "Cannot change status";
+  }
   return menu;
 };
 
@@ -610,12 +478,12 @@ const ListInvoicesSheet = () => {
 
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [dates, setDates] = useState([
-    moment()
+  const [dates, setDates] = useState({
+    start: moment()
       .subtract(1, "month")
       .endOf("day"),
-    moment().endOf("day"),
-  ]);
+    end: moment().endOf("day"),
+  });
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [currentInvoice, setCurrentInvoice] = useState({});
   const [coupans, setCoupans] = useState([]);
@@ -626,7 +494,6 @@ const ListInvoicesSheet = () => {
   const [customerEmailFilter, setCustomerEmailFilter] = useState("");
   const [markedStatusFilter, setMarkedStatusFilter] = useState();
   const [setStatusFilter, setSetStatusFilter] = useState();
-  let start, end;
   const fetchCustomDateRangeData = () => {
     if (dates.length < 2) {
       return notification["warning"]({
@@ -634,8 +501,6 @@ const ListInvoicesSheet = () => {
         description: "Please select start and end dates.",
       });
     }
-    start = dates[0].unix();
-    end = dates[1].unix();
     fetchInvoices();
   };
 
@@ -644,7 +509,7 @@ const ListInvoicesSheet = () => {
     apiCall(
       "/invoices/list",
       {
-        created: { gte: dates[0].unix(), lte: dates[1].unix() },
+        created: { gte: dates.start.unix(), lte: dates.end.unix() },
         customer_email_filter: customerEmailFilter,
         marked_status_filter: markedStatusFilter,
         set_status_filter: setStatusFilter,
@@ -659,7 +524,6 @@ const ListInvoicesSheet = () => {
           row.key = index;
         });
 
-        console.log(invoices);
         setLoading(false);
         setInvoices(invoices);
       },
@@ -792,40 +656,7 @@ const ListInvoicesSheet = () => {
           return <StatusTag faint status={invoice.metadata.marked_status} />;
         }
       },
-      filters: [
-        {
-          text: "Draft",
-          value: "draft",
-        },
-        {
-          text: "Invoiced in error",
-          value: "invoiced_in_error",
-        },
-        {
-          text: "Waiver",
-          value: "waiver",
-        },
-        {
-          text: "Voucher",
-          value: "voucher",
-        },
-        {
-          text: "Refund",
-          value: "refund",
-        },
-        {
-          text: "Uncollectible",
-          value: "uncollectible",
-        },
-        {
-          text: "Open",
-          value: "open",
-        },
-        {
-          text: "Paid",
-          value: "paid",
-        },
-      ],
+      filters: statusFilters,
       onFilter: (value, record) => record.status === value,
     },
     // Current Status
@@ -837,51 +668,13 @@ const ListInvoicesSheet = () => {
       render: (status, invoice) => (
         <StatusTag
           status={
-            invoice.metadata.hasOwnProperty("custom_status") &&
-            status !== "void"
+            invoice.metadata.hasOwnProperty("custom_status")
               ? invoice.metadata.custom_status
               : status
           }
         />
       ),
-      filters: [
-        {
-          text: "Draft",
-          value: "draft",
-        },
-        {
-          text: "Invoiced in error",
-          value: "invoiced_in_error",
-        },
-        {
-          text: "Invoiced in error",
-          value: "void",
-        },
-        {
-          text: "Waiver",
-          value: "waiver",
-        },
-        {
-          text: "Voucher",
-          value: "voucher",
-        },
-        {
-          text: "Refund",
-          value: "refund",
-        },
-        {
-          text: "Uncollectible",
-          value: "uncollectible",
-        },
-        {
-          text: "Open",
-          value: "open",
-        },
-        {
-          text: "Paid",
-          value: "paid",
-        },
-      ],
+      filters: statusFilters,
       onFilter: (value, record) => record.status === value,
     },
     {
@@ -990,13 +783,14 @@ const ListInvoicesSheet = () => {
       <Space>
         <RangePicker
           onCalendarChange={(dates) => {
-            if (dates.length) setDates(dates);
+            if (dates.length) setDates({
+              start: dates[0],
+              end: dates[1],
+            });
           }}
           defaultValue={[
-            moment().endOf("day"),
-            moment()
-              .subtract(1, "month")
-              .endOf("day"),
+            dates.start,
+            dates.end,
           ]}
         />
         <Input

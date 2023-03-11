@@ -70,7 +70,6 @@ router.post("/list", async (req, res) => {
         : ""
     } ${customerId ? `customer:"${customerId}"` : ""}`;
     if (!isStatusClientSideSearch) {
-      console.log("Not client side search");
       query = `${query} ${
         set_status_filter
           ? `metadata["custom_status"]:"${set_status_filter}"`
@@ -78,9 +77,7 @@ router.post("/list", async (req, res) => {
       }`;
     }
     invoices = await Stripe.invoices.search({ query, limit: 100 });
-    console.log(`search result contains ${invoices.data.length} invoices`);
     if (isStatusClientSideSearch) {
-      console.log("Client side search");
       invoices.data = invoices.data.filter(
         (invoice) => invoice.status === set_status_filter
       );
@@ -253,7 +250,7 @@ router.post("/update/:action", authMiddleware, async (req, res) => {
       invoice = setCustomStatus(invoice_id, "refund");
       invoice = await Stripe.invoices.retrieve(invoice_id);
       const charge = invoice.charge;
-      console.log(charge);
+      console.log(`refund invoice: ${invoice_id} charge: ${charge}`);
       const refund = await Stripe.refunds.create({ charge });
       return res.formatter.ok(invoice);
     } else {

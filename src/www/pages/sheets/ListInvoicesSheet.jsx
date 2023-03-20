@@ -402,6 +402,39 @@ const changeStatusMenu = (
   return menu;
 };
 
+const refundMenuItem = (
+  key,
+  invoice_id,
+  invoice,
+  auth_token,
+  fetchInvoices,
+  navigate
+) => {
+  if (invoice.status === "paid")
+    return {
+      key: key,
+      label: (
+        <Button
+          type="primary"
+          danger
+          icon={<RollbackOutlined />}
+          block
+          onClick={() =>
+            changeStatus(
+              "refund",
+              invoice_id,
+              auth_token,
+              fetchInvoices,
+              navigate
+            )
+          }
+        >
+          Refund
+        </Button>
+      ),
+    };
+};
+
 const actionsMenu = (
   invoice_id,
   invoice,
@@ -440,28 +473,14 @@ const actionsMenu = (
           fetchInvoices,
           navigate
         ),
-        {
-          key: 4,
-          label: (
-            <Button
-              type="primary"
-              danger
-              icon={<RollbackOutlined />}
-              block
-              onClick={() =>
-                changeStatus(
-                  "uncollectible",
-                  invoice_id,
-                  auth_token,
-                  fetchInvoices,
-                  navigate
-                )
-              }
-            >
-              Refund
-            </Button>
-          ),
-        },
+        refundMenuItem(
+          4,
+          invoice_id,
+          invoice,
+          auth_token,
+          fetchInvoices,
+          navigate
+        ),
       ]}
       onClick={(e) => console.log(e)}
     />
@@ -783,15 +802,13 @@ const ListInvoicesSheet = () => {
       <Space>
         <RangePicker
           onCalendarChange={(dates) => {
-            if (dates.length) setDates({
-              start: dates[0],
-              end: dates[1],
-            });
+            if (dates.length)
+              setDates({
+                start: dates[0],
+                end: dates[1],
+              });
           }}
-          defaultValue={[
-            dates.start,
-            dates.end,
-          ]}
+          defaultValue={[dates.start, dates.end]}
         />
         <Input
           placeholder="Email"

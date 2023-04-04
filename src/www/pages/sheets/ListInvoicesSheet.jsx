@@ -686,11 +686,7 @@ const ListInvoicesSheet = () => {
       align: "center",
       render: (status, invoice) => (
         <StatusTag
-          status={
-            invoice.metadata.hasOwnProperty("custom_status")
-              ? invoice.metadata.custom_status
-              : status
-          }
+          status={status}
         />
       ),
       filters: statusFilters,

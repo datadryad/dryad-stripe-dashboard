@@ -328,7 +328,7 @@ const changeStatusMenu = (
     menu.disabled = true;
     menu.label = "Cannot change status";
   }
-  
+
   menu.children.push(
     ...Array.from(availableSetOptions).map((availableStatus) =>
       createChangeStatusMenuItem(
@@ -352,29 +352,29 @@ const refundMenuItem = (
   fetchInvoices,
   navigate
 ) => {
-  if (invoice.status === "paid")
-    return {
-      key: key,
-      label: (
-        <Button
-          type="primary"
-          danger
-          icon={<RollbackOutlined />}
-          block
-          onClick={() =>
-            changeStatus(
-              "refund",
-              invoice_id,
-              auth_token,
-              fetchInvoices,
-              navigate
-            )
-          }
-        >
-          Refund
-        </Button>
-      ),
-    };
+  return {
+    key: key,
+    label: (
+      <Button
+        type="primary"
+        danger
+        icon={<RollbackOutlined />}
+        block
+        disabled={invoice.status !== "paid" || invoice?.metadata?.custom_status === "refund" }
+        onClick={() =>
+          changeStatus(
+            "refund",
+            invoice_id,
+            auth_token,
+            fetchInvoices,
+            navigate
+          )
+        }
+      >
+        Refund
+      </Button>
+    ),
+  };
 };
 
 const actionsMenu = (

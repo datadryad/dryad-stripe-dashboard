@@ -218,7 +218,7 @@ const markStatusMenu = (
   const status = invoice.status;
   const markedStatus = invoice.metadata.marked_status;
   const setStatus = invoice.metadata.custom_status;
-  const availableMarkOptions = [];
+  const availableMarkOptions = new Set();
   const menu = {
     key: menuKey,
     label: "Mark Invoice",
@@ -227,74 +227,52 @@ const markStatusMenu = (
 
   switch (status) {
     case "draft":
-      menu.children.push(
-        ...["invoiced_in_error", "waiver", "voucher"].map((availableStatus) =>
-          createMarkStatusMenuItem(
-            menuKey,
-            availableStatus,
-            invoice_id,
-            invoice,
-            auth_token,
-            fetchInvoices,
-            modalFunction,
-            navigate
-          )
-        )
-      );
+      availableMarkOptions.add("invoiced_in_error");
+      availableMarkOptions.add("waiver");
+      availableMarkOptions.add("voucher");
       break;
     case "open":
-      menu.children.push(
-        ...[
-          "paid",
-          "invoiced_in_error",
-          "waiver",
-          "voucher",
-          "uncollectible",
-        ].map((availableStatus) =>
-          createMarkStatusMenuItem(
-            menuKey,
-            availableStatus,
-            invoice_id,
-            invoice,
-            auth_token,
-            fetchInvoices,
-            modalFunction,
-            navigate
-          )
-        )
-      );
+      availableMarkOptions.add("paid");
+      availableMarkOptions.add("invoiced_in_error");
+      availableMarkOptions.add("waiver");
+      availableMarkOptions.add("voucher");
+      availableMarkOptions.add("uncollectible");
       break;
     case "void":
       break;
     case "uncollectible":
       break;
     case "paid":
-      menu.children.push(
-        ...["refund"].map((availableStatus) =>
-          createMarkStatusMenuItem(
-            menuKey,
-            availableStatus,
-            invoice_id,
-            invoice,
-            auth_token,
-            fetchInvoices,
-            modalFunction,
-            navigate
-          )
-        )
-      );
+      availableMarkOptions.add("refund");
       break;
     default:
       break;
   }
 
+  if (markedStatus === "waiver") availableMarkOptions.delete("waiver");
+  if (markedStatus === "voucher") availableMarkOptions.delete("voucher");
+
   if (
-    menu.children.length < 1 ||
+    availableMarkOptions.size < 1 ||
     ["invoiced_in_error", "uncollectible", "refund"].includes(setStatus)
   ) {
     menu.disabled = true;
     menu.label = "Cannot mark this invoice";
   }
+  menu.children.push(
+    ...Array.from(availableMarkOptions).map((availableStatus) =>
+      createMarkStatusMenuItem(
+        menuKey,
+        availableStatus,
+        invoice_id,
+        invoice,
+        auth_token,
+        fetchInvoices,
+        modalFunction,
+        navigate
+      )
+    )
+  );
   return menu;
 };
 
@@ -309,6 +287,7 @@ const changeStatusMenu = (
   const markedStatus = invoice.metadata.marked_status;
   const setStatus = invoice.metadata.custom_status;
   const status = invoice.status;
+  const availableSetOptions = new Set();
   const menu = {
     key: menuKey,
     label: "Change Status",
@@ -317,66 +296,41 @@ const changeStatusMenu = (
 
   switch (status) {
     case "draft":
-      menu.children.push(
-        ...["invoiced_in_error", "waiver", "voucher"].map((s) =>
-          createChangeStatusMenuItem(
-            menuKey,
-            s,
-            invoice_id,
-            auth_token,
-            fetchInvoices,
-            navigate
-          )
-        )
-      );
+      availableSetOptions.add("invoiced_in_error");
+      availableSetOptions.add("waiver");
+      availableSetOptions.add("voucher");
       break;
     case "paid":
-      menu.children.push(
-        ...["refund"].map((availableStatus) =>
-          createChangeStatusMenuItem(
-            menuKey,
-            availableStatus,
-            invoice_id,
-            auth_token,
-            fetchInvoices,
-            navigate
-          )
-        )
-      );
+      availableSetOptions.add("refund");
       break;
     case "uncollectible":
       break;
     case "void":
       break;
     case "open":
-      menu.children.push(
-        ...[
-          "paid",
-          "waiver",
-          "voucher",
-          "invoiced_in_error",
-          "uncollectible",
-        ].map((availableStatus) =>
-          createChangeStatusMenuItem(
-            menuKey,
-            availableStatus,
-            invoice_id,
-            auth_token,
-            fetchInvoices,
-            navigate
-          )
-        )
-      );
+      availableSetOptions.add("paid");
+      availableSetOptions.add("waiver");
+      availableSetOptions.add("voucher");
+      availableSetOptions.add("invoiced_in_error");
+      availableSetOptions.add("uncollectible");
       break;
     default:
       break;
   }
 
-  if (setStatus === "refund" && status === "paid") {
-    menu.children = [
-      "uncollectible",
-      "invoiced_in_error",
-    ].map((availableStatus) =>
+  if (setStatus === "waiver") availableSetOptions.delete("waiver");
+  if (setStatus === "voucher") availableSetOptions.delete("voucher");
+
+  if (
+    availableSetOptions.size < 1 ||
+    ["uncollectible", "invoiced_in_error", "refund"].includes(setStatus)
+  ) {
+    menu.disabled = true;
+    menu.label = "Cannot change status";
+  }
+  
+  menu.children.push(
+    ...Array.from(availableSetOptions).map((availableStatus) =>
       createChangeStatusMenuItem(
         menuKey,
         availableStatus,
@@ -385,16 +339,8 @@ const changeStatusMenu = (
         fetchInvoices,
         navigate
       )
-    );
-  }
-
-  if (
-    menu.children.length < 1 ||
-    ["uncollectible", "invoiced_in_error"].includes(setStatus)
-  ) {
-    menu.disabled = true;
-    menu.label = "Cannot change status";
-  }
+    )
+  );
   return menu;
 };
 
@@ -683,6 +629,7 @@ const ListInvoicesSheet = () => {
       render: (status, invoice) => {
         let currentStatus = invoice?.metadata?.custom_status;
         if (status === "paid") currentStatus = `${currentStatus}, paid`;
+        if (!currentStatus) currentStatus = status;
         return <StatusTag status={currentStatus} />;
       },
       filters: statusFilters,

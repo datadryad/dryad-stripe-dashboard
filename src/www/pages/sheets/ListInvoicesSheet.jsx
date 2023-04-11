@@ -270,11 +270,7 @@ const markStatusMenu = (
       break;
     case "paid":
       menu.children.push(
-        ...[
-          "refund",
-          "uncollectible",
-          "invoiced_in_error",
-        ].map((availableStatus) =>
+        ...["refund"].map((availableStatus) =>
           createMarkStatusMenuItem(
             menuKey,
             availableStatus,
@@ -684,15 +680,11 @@ const ListInvoicesSheet = () => {
       dataIndex: "status",
       key: "status",
       align: "center",
-      render: (status, invoice) => (
-        <StatusTag
-          status={
-            invoice.metadata.hasOwnProperty("custom_status")
-              ? invoice.metadata.custom_status
-              : status
-          }
-        />
-      ),
+      render: (status, invoice) => {
+        let currentStatus = invoice?.metadata?.custom_status;
+        if (status === "paid") currentStatus = `${currentStatus}, paid`;
+        return <StatusTag status={currentStatus} />;
+      },
       filters: statusFilters,
       onFilter: (value, record) => record.status === value,
     },

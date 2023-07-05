@@ -5,7 +5,7 @@ import WebSocket, { WebSocketServer } from "ws";
 import Invoice from "../mongo/Invoice.js";
 import { sendNotificationToAllActiveSessions } from "../websocket_utils.js";
 
-const endpointSecret = "whsec_b0329a1720b7e2e47daa28b998870496263f2f172eeae0588cdf42d6ea7d1725";
+const endpointSecret = process.env.ENDPOINT_SECRET;
 
 const router = express.Router();
 

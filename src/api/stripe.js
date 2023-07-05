@@ -2,11 +2,9 @@ import ordinal from "ordinal";
 import Invoice from "./mongo/Invoice.js";
 import stripe from "stripe";
 
-// export const Stripe = new Stripe('sk_test_4BrPSiaL4k0dyjPlGFw9Efyd00tZPqtOlX');
-export const Stripe = new stripe("sk_test_fX9EovHjWMI7pR7saJuJ6Cka", {
+export const Stripe = new stripe(process.env.SECRET_KEY, {
   apiVersion: "2022-11-15",
 });
-// export const Stripe = new Stripe('sk_test_51LIUymSIt9fpyvh6mswNEo5zCGruv8fBzLEm88rgrktfE9ZCfIz6W5AitmHbzm58hCCMs08CLEuKXo2b2aD2o2jo00MXP01MiL');
 
 export const handleError = (res, err) => {
   console.error(err);

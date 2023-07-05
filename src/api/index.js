@@ -1,10 +1,9 @@
-import { default as dotenv } from "dotenv";
+import dotenv from 'dotenv';
+dotenv.config()
 import express from "express";
 import jwt from "jsonwebtoken";
 import path from "path";
 import { fileURLToPath } from "url";
-dotenv.config();
-// require('dotenv').config();
 import cors from "cors";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -25,7 +24,6 @@ import webHookRoutes from "./routes/StripeWebhook.js";
 import { initiateRestore, Stripe } from "./stripe.js";
 import { addActiveUserSession } from "./websocket_utils.js";
 
-process.env.SECRET_KEY = "DEV";
 // const UserSchema = require("node-mongoose-auth/models/UserSchema").add({permissions : String});
 
 const app = express();
